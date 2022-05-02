@@ -1,0 +1,44 @@
+version: '1.0'
+services:
+    influx:
+      image: influxdb
+      environment:
+        - INFLUXDB_ADMIN_ENABLED=true
+      volumes:
+        - influxdata:/var/lib/influx.db
+      ports:
+        - '8086:8086'
+    data:
+      build:
+        context: ./data
+      env_file: docker-compose.env
+      environment: 
+        NODEID: "node-data"
+        SERVICES: data
+        ADMIN_USER: admin
+        ADMIN_PASSWORD: admin
+        INFLUXDB_DATABASE: temperature
+        INFLUXDB_HOST: influx
+      depends_on:
+        - influx
+    gateway:
+      build: 
+        context: ./gateway
+      image: gateway
+      ports:
+        - "5000:80"
+    grafana:
+      ports:
+        -4200:3000
+      image:
+        grafana/grafana:3.1.1
+      depends_on:
+        - influx
+      links: 
+        - influx
+      volumes: 
+        - influxdata:/var/lib/influx.db
+
+
+volumes:
+  influxdata:
