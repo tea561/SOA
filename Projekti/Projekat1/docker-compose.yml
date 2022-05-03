@@ -17,7 +17,7 @@ services:
         SERVICES: data
         ADMIN_USER: admin
         ADMIN_PASSWORD: admin
-        INFLUXDB_DATABASE: temperature
+        INFLUXDB_DATABASE: vitals
         INFLUXDB_HOST: influx
       depends_on:
         - influx
@@ -29,7 +29,7 @@ services:
         - "5000:80"
     grafana:
       ports:
-        -4200:3000
+        - 4200:3000
       image:
         grafana/grafana:3.1.1
       depends_on:
