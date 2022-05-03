@@ -68,19 +68,21 @@ namespace gateway.Controllers
             {
                 var c = JsonConvert.SerializeObject(userID);
                 StringContent content = new StringContent(c, Encoding.UTF8, "application/json");
-                using (var response = await httpClient.GetAsync($"http://data:3333/getCurrentValues/{userID}"))
+                using (var response = await httpClient.GetAsync($"http://data:3333/getCurrentValues?userID={userID}"))
                 {
                     var parameters = await response.Content.ReadFromJsonAsync<Parameters>(); 
                     if(parameters != null)
                     {
                         resultData.HealthParameters = parameters;
+                        long time = (parameters.Time != null) ? long.Parse(parameters.Time) : 0L;
+                        resultData.HealthParameters.Time = (new DateTime(time)).ToString("f");
                     }   
                 }
             }
 
             string searchTerm = "radio";
 
-            if(resultData.HealthParameters?.Sys > 130 || resultData.HealthParameters?.Sys > 90)
+            if(resultData.HealthParameters?.SysPressure > 130 || resultData.HealthParameters?.DiasPressure > 90)
             {   
                 if(resultData.HealthParameters?.Pulse > 80)
                     searchTerm = "calm music";
@@ -90,7 +92,7 @@ namespace gateway.Controllers
             else if(resultData.HealthParameters?.Pulse > 80) {
                 searchTerm = "relaxing music";
             }
-            else if (resultData.HealthParameters?.Pulse < 60 || resultData.HealthParameters?.Sys < 120 || resultData.HealthParameters?.Dias < 70)
+            else if (resultData.HealthParameters?.Pulse < 60 || resultData.HealthParameters?.SysPressure < 120 || resultData.HealthParameters?.DiasPressure < 70)
             {
                 searchTerm = "up beat music";
             }
@@ -111,13 +113,8 @@ namespace gateway.Controllers
 
             resultData.ResourceTitle = searchListResponse.Items[0].Snippet.Title;
             string resourceId;
-            // if(searchListResponse.Items[0].Id.Kind == "youtube#video")
-            //     resourceId = searchListResponse.Items[0].Id.VideoId;
-            // else
-            //     resourceId = sear
-            //     resultData.ResourceTitle = $"https://www.youtube.com/watch?v={searchListResponse.Items[0].Id.VideoId}";
 
-            resourceId = (searchListResponse.Items[0].Id.Kind == "youtube#playlist") ? searchListResponse.Items[0].Id.VideoId : searchListResponse.Items[0].Id.PlaylistId;
+            resourceId = (searchListResponse.Items[0].Id.Kind == "youtube#playlist") ? searchListResponse.Items[0].Id.PlaylistId : searchListResponse.Items[0].Id.VideoId;
             resultData.ResourceUrl = $"https://www.youtube.com/watch?v={resourceId}";
 
             return Ok(resultData);
