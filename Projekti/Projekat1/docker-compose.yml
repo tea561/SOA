@@ -1,7 +1,7 @@
 version: '1.0'
 services:
     influx:
-      image: influxdb
+      image: influxdb:1.8
       environment:
         - INFLUXDB_ADMIN_ENABLED=true
       volumes:
@@ -10,7 +10,7 @@ services:
         - '8086:8086'
     data:
       build:
-        context: ./services/data
+        context: .
       env_file: docker-compose.env
       environment: 
         NODEID: "node-data"

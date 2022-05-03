@@ -1,9 +1,10 @@
 "use strict"
 
 const fs = require('fs'); 
+const express = require("express");
 const parse = require('csv-parse');
 const Influx = require('influx');
-
+const bodyParser = require('body-parser');
 
 module.exports = {
 	name: 'data',
@@ -15,62 +16,6 @@ module.exports = {
 			app.get("/getVitals", this.getVitals);
 			app.get("/getCurrentValues", this.getCurrentValues);
 			app.post("/postVitals", this.postVitals);
-		},
-		initInflux() {
-			this.influx = new Influx.InfluxDB({
-				host: process.env.INFLUXDB_HOST || 'influx',
-				database: process.env.INFLUXDB_DATABASE || 'vitals',
-				username: process.env.ADMIN_USER || 'admin',
-				password: process.env.ADMIN_PASSWORD || 'admin',
-				schema: [
-					{
-						measurement: 'sys-pressure',
-						fields: {
-							value: Influx.FieldType.FLOAT,
-						},
-						tags: ['userID'],
-					},
-					{
-						measurement: 'dias-pressure',
-						fields: {
-							value: Influx.FieldType.FLOAT,
-						},
-						tags: ['userID'],
-					},
-					{
-						measurement: 'pulse',
-						fields: {
-							value: Influx.FieldType.INTEGER
-						},
-						tags: ['userID']
-					}
-				]
-			});
-			this.influx.getDatabaseNames().then((names) => {
-				if(!names.includes('vitals')){
-					return this.influx.createDatabase('vitals');
-				}
-				return null;
-			});
-		},
-		initParser() {
-			this.parser = parse.parse({columns: true});
-			this.records = [];
-
-			parser.on('readable', function(){
-			let record;
-			while ((record = parser.read()) !== null) {
-	  			records.push(record);
-			}
-  			});
-  			parser.on('error', function(err){
-				console.error(err.message);
- 		 	});
-  			parser.on('end', function(){
-				console.log(records)
-  			});
-
-			fs.createReadStream('Blood_Pressure.csv').pipe(parser);
 		},
 		async getVitals(req, res) {
 			try {
@@ -126,10 +71,10 @@ module.exports = {
 					time: timestamp
 				}]);
 				const retval = {
-					userID = req.query.userID,
-					sysPressure = record.Sys,
-					diasPressure = record.Dias,
-					pulse = record.Pulse,
+					userID: req.query.userID,
+					sysPressure: record.Sys,
+					diasPressure: record.Dias,
+					pulse: record.Pulse,
 					timestamp
 				};
 				res.send(retval);
@@ -149,10 +94,63 @@ module.exports = {
         app.use(bodyParser.json());
         app.listen(this.settings.port);
         this.initRoutes(app);
-		this.initInflux();
-		this.initParser();
+		this.influx = new Influx.InfluxDB({
+			host: process.env.INFLUXDB_HOST || 'influx',
+			database: process.env.INFLUXDB_DATABASE || 'vitals',
+			username: process.env.ADMIN_USER || 'admin',
+			password: process.env.ADMIN_PASSWORD || 'admin',
+			schema: [
+				{
+					measurement: 'sys-pressure',
+					fields: {
+						value: Influx.FieldType.FLOAT,
+					},
+					tags: ['userID'],
+				},
+				{
+					measurement: 'dias-pressure',
+					fields: {
+						value: Influx.FieldType.FLOAT,
+					},
+					tags: ['userID'],
+				},
+				{
+					measurement: 'pulse',
+					fields: {
+						value: Influx.FieldType.INTEGER
+					},
+					tags: ['userID']
+				}
+			]
+		});
+		this.influx.getDatabaseNames().then((names) => {
+			if (!names.includes('vitals')) {
+				return this.influx.createDatabase('vitals');
+			}
+			return null;
+		});
+
+
+		this.parser = parse.parse({ columns: true });
+		this.records = [];
+
+		this.parser.on('readable', () => {
+			let record;
+			while ((record = this.parser.read()) !== null) {
+				this.records.push(record);
+			}
+		});
+		this.parser.on('error', function (err) {
+			console.error(err.message);
+		});
+		this.parser.on('end', function () {
+			console.log(this.records)
+		});
+
+		fs.createReadStream('/app/Blood_Pressure.csv').pipe(this.parser);
+
 		this.count = 0;
         this.app = app;
-		console.log(records[0])
+		console.log(this.records[0])
     }
 }
