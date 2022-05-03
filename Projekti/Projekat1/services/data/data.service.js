@@ -17,6 +17,10 @@ module.exports = {
 			app.get("/getCurrentValues", this.getCurrentValues);
 			app.post("/postVitals", this.postVitals);
 		},
+		writeRecords(err, records) {
+			console.log(records[0]);
+			this.records = records;
+		},
 		async getVitals(req, res) {
 			try {
 				const sysPressure = await this.influx.query(
@@ -130,27 +134,28 @@ module.exports = {
 			return null;
 		});
 
-
-		this.parser = parse.parse({ columns: true });
 		this.records = [];
 
-		this.parser.on('readable', () => {
-			let record;
-			while ((record = this.parser.read()) !== null) {
-				this.records.push(record);
-			}
-		});
-		this.parser.on('error', function (err) {
-			console.error(err.message);
-		});
-		this.parser.on('end', function () {
-			console.log(this.records)
-		});
+		this.parser = parse.parse({ columns: true }, this.writeRecords);
+
+		// this.parser.on('readable', () => {
+		// 	let record;
+		// 	while ((record = this.parser.read()) !== null) {
+		// 		this.records.push(record);
+		// 	}
+		// });
+		// this.parser.on('error', function (err) {
+		// 	console.error(err.message);
+		// });
+		// this.parser.on('end', function () {
+		// 	console.log(this.records)
+		// });
 
 		fs.createReadStream('/app/Blood_Pressure.csv').pipe(this.parser);
 
 		this.count = 0;
         this.app = app;
-		console.log(this.records[0])
+		console.log(this.records[0]);
+		console.log("HELLO");
     }
 }

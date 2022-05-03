@@ -19,6 +19,8 @@ services:
         ADMIN_PASSWORD: admin
         INFLUXDB_DATABASE: vitals
         INFLUXDB_HOST: influx
+      ports:
+        - '3333:3333'
       depends_on:
         - influx
     gateway:
