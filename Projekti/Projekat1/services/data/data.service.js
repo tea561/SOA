@@ -1,8 +1,6 @@
 "use strict"
 
-const fs = require('fs'); 
 const express = require("express");
-const parse = require('csv-parse');
 const Influx = require('influx');
 const bodyParser = require('body-parser');
 
@@ -14,83 +12,78 @@ module.exports = {
 	methods: {
 		initRoutes(app) {
 			app.get("/getVitals", this.getVitals);
-			app.get("/getCurrentValues", this.getCurrentValues);
 			app.post("/postVitals", this.postVitals);
-		},
-		writeRecords(err, records) {
-			console.log(records[0]);
-			this.records = records;
 		},
 		async getVitals(req, res) {
 			try {
 				const sysPressure = await this.influx.query(
-					`select last * from sys-pressure`
+					`select last(*) from "sys-pressure" where userID='9'`
 				);
 				const diasPressure = await this.influx.query(
-					`select last * from dias-pressure`
+					`select last(*) from "dias-pressure"`
 				);
 				const pulse = await this.influx.query(
-					'select last * from pulse'
-				)
-				console.log(sysPressure, diasPressure, pulse);
+					'select last(*) from "pulse"'
+				);
+				console.log(sysPressure);
+				res.send({
+					sysPressure: sysPressure[0].last_value,
+					diasPressure: diasPressure[0].last_value,
+					pulse: pulse[0].last_value,
+					userID: req.query.userID
+				})
+				console.log(sysPressure[0].last_value, diasPressure[0].last_value, pulse[0].last_value);
 			}
 			catch(err){
 				console.log(err);
-				return null;
+				res.send(false);
 			}
 		},
-		async getCurrentValues(req, res) {
+		async postVitals(req, res) {
 			try {
-				const record = this.records[this.count];
-				this.count = (this.count + 1) % this.records.length; 
-				const timestamp = new Date().getTime();
 				this.influx.writePoints([{
 					measurement: 'sys-pressure',
 					tags: {
-						userID: req.query.userID
+						userID: req.body.userID
 					},
 					fields: {
-						value: record.Sys
+						value: req.body.sys
 					},
-					time: timestamp
+					time: req.body.timestamp
 				},
 				{
 					measurement: 'dias-pressure',
 					tags: {
-						userID: req.query.userID
+						userID: req.body.userID
 					},
 					fields: {
-						value: record.Dias
+						value: req.body.dias
 					},
-					time: timestamp
+					time: req.body.timestamp
 				},
 				{
 					measurement: 'pulse',
 					tags: {
-						userID: req.query.userID
+						userID: req.body.userID
 					},
 					fields: {
-						value: record.Pulse
+						value: req.body.pulse
 					},
-					time: timestamp
+					time: req.body.timestamp
 				}]);
-				const retval = {
-					userID: req.query.userID,
-					sysPressure: record.Sys,
-					diasPressure: record.Dias,
-					pulse: record.Pulse,
-					timestamp
-				};
-				res.send(retval);
+				res.send(true);
 			}
 			catch(err) {
 				console.log(err);
+				res.send(false);
 			}
 		},
-		async postVitals(req, res) {
-
+		async putVitals(req, res) {
+			//TODO: implement this
 		},
-
+		async deleteVitals(req, res) {
+			//TODO: implement this
+		}
 	},
 	created() {
         const app = express();
@@ -133,29 +126,7 @@ module.exports = {
 			}
 			return null;
 		});
-
-		this.records = [];
-
-		this.parser = parse.parse({ columns: true }, this.writeRecords);
-
-		// this.parser.on('readable', () => {
-		// 	let record;
-		// 	while ((record = this.parser.read()) !== null) {
-		// 		this.records.push(record);
-		// 	}
-		// });
-		// this.parser.on('error', function (err) {
-		// 	console.error(err.message);
-		// });
-		// this.parser.on('end', function () {
-		// 	console.log(this.records)
-		// });
-
-		fs.createReadStream('/app/Blood_Pressure.csv').pipe(this.parser);
-
-		this.count = 0;
         this.app = app;
-		console.log(this.records[0]);
-		console.log("HELLO");
+		console.log("Data Service listening on port 3333.");
     }
 }
