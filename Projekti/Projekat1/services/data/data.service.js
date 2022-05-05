@@ -13,6 +13,7 @@ module.exports = {
 		initRoutes(app) {
 			app.get("/getVitals", this.getVitals);
 			app.post("/postVitals", this.postVitals);
+			app.put("/updateVitals", this.putVitals);
 			app.delete("/deleteVitals", this.deleteVitals);
 		},
 		async getVitals(req, res) {
@@ -31,7 +32,8 @@ module.exports = {
 					sysPressure: sysPressure[0].last_value,
 					diasPressure: diasPressure[0].last_value,
 					pulse: pulse[0].last_value,
-					userID: req.query.userID
+					userID: req.query.userID,
+					timestamp: new Date(sysPressure[0].time).getTime()
 				});
 				console.log(sysPressure[0].last_value, diasPressure[0].last_value, pulse[0].last_value);
 			}
@@ -80,7 +82,51 @@ module.exports = {
 			}
 		},
 		async putVitals(req, res) {
-			//TODO: implement this
+			//FIXME: put actually posts new data
+			try {
+				const measurements = ["sys-pressure", "dias-pressure", "pulse"];
+				measurements.forEach(async (m) => {
+					this.influx.query(
+						`delete from "${m}" where userID='${req.query.userID}'`
+					);
+				});
+				this.influx.writePoints([{
+					measurement: 'sys-pressure',
+					tags: {
+						userID: req.body.userID
+					},
+					fields: {
+						value: req.body.sys
+					},
+					time: req.body.timestamp
+				},
+				{
+					measurement: 'dias-pressure',
+					tags: {
+						userID: req.body.userID
+					},
+					fields: {
+						value: req.body.dias
+					},
+					time: req.body.timestamp
+				},
+				{
+					measurement: 'pulse',
+					tags: {
+						userID: req.body.userID
+					},
+					fields: {
+						value: req.body.pulse
+					},
+					time: req.body.timestamp
+				}]);
+
+				res.send(true);
+			}
+			catch(err) {
+				console.log(err);
+				res.send(false);
+			}
 		},
 		async deleteVitals(req, res) {
 			try {
