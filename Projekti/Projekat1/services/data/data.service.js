@@ -13,6 +13,7 @@ module.exports = {
 		initRoutes(app) {
 			app.get("/getVitals", this.getVitals);
 			app.post("/postVitals", this.postVitals);
+			app.delete("/deleteVitals", this.deleteVitals);
 		},
 		async getVitals(req, res) {
 			try {
@@ -31,7 +32,7 @@ module.exports = {
 					diasPressure: diasPressure[0].last_value,
 					pulse: pulse[0].last_value,
 					userID: req.query.userID
-				})
+				});
 				console.log(sysPressure[0].last_value, diasPressure[0].last_value, pulse[0].last_value);
 			}
 			catch(err){
@@ -82,7 +83,19 @@ module.exports = {
 			//TODO: implement this
 		},
 		async deleteVitals(req, res) {
-			//TODO: implement this
+			try {
+				const measurements = ["sys-pressure", "dias-pressure", "pulse"];
+				measurements.forEach((m) => {
+					this.influx.query(
+						`delete from "${m}" where userID='${req.query.userID}'`
+					);
+				});
+				res.send(true);
+			}
+			catch(err) {
+				console.log(err);
+				res.send(false);
+			}
 		}
 	},
 	created() {
