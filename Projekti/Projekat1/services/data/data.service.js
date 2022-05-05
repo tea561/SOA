@@ -17,13 +17,13 @@ module.exports = {
 		async getVitals(req, res) {
 			try {
 				const sysPressure = await this.influx.query(
-					`select last(*) from "sys-pressure" where userID='9'`
+					`select last(*) from "sys-pressure" where userID='${req.query.userID}'`
 				);
 				const diasPressure = await this.influx.query(
-					`select last(*) from "dias-pressure"`
+					`select last(*) from "dias-pressure" where userID='${req.query.userID}'`
 				);
 				const pulse = await this.influx.query(
-					'select last(*) from "pulse"'
+					`select last(*) from "pulse" where userID='${req.query.userID}'`
 				);
 				console.log(sysPressure);
 				res.send({

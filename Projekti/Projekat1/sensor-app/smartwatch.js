@@ -9,6 +9,8 @@ const userID = 9;
 let records = [];
 let currentRecord = 0;
 let count = 0;
+
+//TODO: change url to gateway service
 const url = "http://localhost:3333/postVitals";
 const parser = parse.parse({ columns: true }, function (err, recs) {
   records = recs;
