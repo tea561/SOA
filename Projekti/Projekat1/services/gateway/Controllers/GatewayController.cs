@@ -59,7 +59,15 @@ namespace gateway.Controllers
 
         // }
 
+        /// <summary>
+        /// Gets health parameters and recommended YouTube resource for specific user.
+        /// </summary>
+        /// <param name="userID">User ID</param>
+        /// <returns></returns>
+        /// <response code="404">User not found.</response>
         [HttpGet("GetStatus/{userID}")]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<IActionResult> GetStatus(int userID)
         {
             
@@ -135,7 +143,11 @@ namespace gateway.Controllers
             
         }
 
-
+        /// <summary>
+        /// Post vital parameters for specific user.
+        /// </summary>
+        /// <param name="parameters"></param>
+        /// <returns></returns>
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] Parameters parameters)
         {
