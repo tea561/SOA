@@ -41,8 +41,7 @@ module.exports = {
 			}
 			catch(err){
 				console.log(err);
-				res.status(500)
-				res.send(err);
+				res.status(500).send(err);
 			}
 		},
 		async postVitals(req, res) {
@@ -50,8 +49,8 @@ module.exports = {
 				|| req.body.sys == undefined 
 				|| req.body.dias == undefined 
 				|| req.body.pulse == undefined) {
-					res.status(400);
-					res.send("Post parameters not defined.");
+					res.status(400).send("Post parameters not defined.");
+					return null;
 			}
 			try {
 				this.influx.writePoints([{
@@ -88,8 +87,7 @@ module.exports = {
 			}
 			catch(err) {
 				console.log(err);
-				res.status(500);
-				res.send(err);
+				res.status(500).send(err);
 			}
 		},
 		async putVitals(req, res) {
@@ -97,8 +95,8 @@ module.exports = {
 				|| req.body.sys == undefined 
 				|| req.body.dias == undefined 
 				|| req.body.pulse == undefined) {
-					res.status(400);
-					res.send("Put parameters not defined.");
+					res.status(400).send("Put parameters not defined.");
+					return null;
 			}
 			try {
 				const measurements = ["sys-pressure", "dias-pressure", "pulse"];
@@ -142,8 +140,7 @@ module.exports = {
 			}
 			catch(err) {
 				console.log(err);
-				res.status(500);
-				res.send(err);
+				res.status(500).send(err);
 			}
 		},
 		async deleteVitals(req, res) {
@@ -158,8 +155,7 @@ module.exports = {
 			}
 			catch(err) {
 				console.log(err);
-				res.status(500);
-				res.send(err);
+				res.status(500).send(err);
 			}
 		}
 	},
