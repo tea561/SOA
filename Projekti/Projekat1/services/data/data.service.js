@@ -24,6 +24,7 @@ module.exports = {
 				if (sysPressure[0] == undefined) {
 					res.status(404);
 					res.send(`There is no entry for user with id = ${req.query.userID}.`);
+					return null;
 				}
 				const diasPressure = await this.influx.query(
 					`select last(*) from "dias-pressure" where userID='${req.query.userID}'`

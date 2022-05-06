@@ -18,83 +18,96 @@ namespace gateway.Controllers
         {
 
         }
-        [HttpGet]
-        public async Task<IActionResult> Get()
-        {
-            var youtubeService = new YouTubeService(new BaseClientService.Initializer()
-            {
-                ApiKey = "AIzaSyCfhFoxWD-tZGM7ssl7U2OJVTgmy0GqjxM",
-                ApplicationName = this.GetType().ToString()
-            });
+        // [HttpGet]
+        // public async Task<IActionResult> Get()
+        // {
+        //     var youtubeService = new YouTubeService(new BaseClientService.Initializer()
+        //     {
+        //         ApiKey = "AIzaSyCfhFoxWD-tZGM7ssl7U2OJVTgmy0GqjxM",
+        //         ApplicationName = this.GetType().ToString()
+        //     });
 
-            var searchListRequest = youtubeService.Search.List("snippet");
-            searchListRequest.Q = "rock playlist";
-            searchListRequest.MaxResults = 13;
-            searchListRequest.Type = "video,playlist";
+        //     var searchListRequest = youtubeService.Search.List("snippet");
+        //     searchListRequest.Q = "rock playlist";
+        //     searchListRequest.MaxResults = 13;
+        //     searchListRequest.Type = "video,playlist";
 
-            var searchListResponse = await searchListRequest.ExecuteAsync();
+        //     var searchListResponse = await searchListRequest.ExecuteAsync();
 
-            // List<string> results = new List<string>();
+        //     // List<string> results = new List<string>();
 
-            // foreach (var searchResult in searchListResponse.Items)
-            // {
-            //     switch (searchResult.Id.Kind)
-            //     {
-            //         case "youtube#video":
-            //             results.Add(String.Format("{0} ({1})", searchResult.Snippet.Title, searchResult.Id.VideoId));
-            //             break;
+        //     // foreach (var searchResult in searchListResponse.Items)
+        //     // {
+        //     //     switch (searchResult.Id.Kind)
+        //     //     {
+        //     //         case "youtube#video":
+        //     //             results.Add(String.Format("{0} ({1})", searchResult.Snippet.Title, searchResult.Id.VideoId));
+        //     //             break;
 
-            //         case "youtube#channel":
-            //             results.Add(String.Format("{0} ({1})", searchResult.Snippet.Title, searchResult.Id.ChannelId));
-            //             break;
+        //     //         case "youtube#channel":
+        //     //             results.Add(String.Format("{0} ({1})", searchResult.Snippet.Title, searchResult.Id.ChannelId));
+        //     //             break;
 
-            //         case "youtube#playlist":
-            //             results.Add(String.Format("{0} ({1})", searchResult.Snippet.Title, searchResult.Id.PlaylistId));
-            //             break;
-            //     }
-            // }
+        //     //         case "youtube#playlist":
+        //     //             results.Add(String.Format("{0} ({1})", searchResult.Snippet.Title, searchResult.Id.PlaylistId));
+        //     //             break;
+        //     //     }
+        //     // }
 
-            return Ok(searchListResponse);
+        //     return Ok(searchListResponse);
 
 
-        }
+        // }
 
         [HttpGet("GetStatus/{userID}")]
         public async Task<IActionResult> GetStatus(int userID)
         {
-            //Parameters healthParameters = new Parameters();
+            
             ResultData resultData = new ResultData();
             using(var httpClient = new HttpClient())
             {
-                var c = JsonConvert.SerializeObject(userID);
-                StringContent content = new StringContent(c, Encoding.UTF8, "application/json");
-                using (var response = await httpClient.GetAsync($"http://data:3333/getCurrentValues?userID={userID}"))
+                using (var response = await httpClient.GetAsync($"http://localhost:3333/getVitals?userID={userID}"))
                 {
-                    var parameters = await response.Content.ReadFromJsonAsync<Parameters>(); 
-                    if(parameters != null)
+                    
+                    if(response.StatusCode == System.Net.HttpStatusCode.OK)
                     {
+                        var parameters = await response.Content.ReadFromJsonAsync<Parameters>();
                         resultData.HealthParameters = parameters;
-                        long time = (parameters.Time != null) ? long.Parse(parameters.Time) : 0L;
-                        resultData.HealthParameters.Time = (new DateTime(time)).ToString("f");
-                    }   
+                        // long time = (parameters.Timestamp != null) ? long.Parse(parameters.Timestamp) : 0L;
+                        // resultData.HealthParameters.Timestamp = (new DateTime(time)).ToString("f");
+                    }
+                    else if(response.StatusCode == System.Net.HttpStatusCode.NotFound)
+                    {
+                        var errorResponse = await response.Content.ReadAsStringAsync();
+                        return NotFound(errorResponse);
+                    }
+                    else if(response.StatusCode == System.Net.HttpStatusCode.InternalServerError)
+                    {
+                        //var errorResponse = await response.Content.ReadAsStringAsync();
+                        return StatusCode(500);
+                    }
+                    else
+                    {
+                        return BadRequest();
+                    }
                 }
             }
 
-            string searchTerm = "radio";
+            string searchTerm = "neutral";
 
-            if(resultData.HealthParameters?.SysPressure > 130 || resultData.HealthParameters?.DiasPressure > 90)
+            if(resultData.HealthParameters?.Sys > 130 || resultData.HealthParameters?.Dias > 90)
             {   
                 if(resultData.HealthParameters?.Pulse > 80)
-                    searchTerm = "calm music";
+                    searchTerm = "calm";
                 else
-                    searchTerm = "classical music";
+                    searchTerm = "classical";
             }
             else if(resultData.HealthParameters?.Pulse > 80) {
-                searchTerm = "relaxing music";
+                searchTerm = "relaxing";
             }
-            else if (resultData.HealthParameters?.Pulse < 60 || resultData.HealthParameters?.SysPressure < 120 || resultData.HealthParameters?.DiasPressure < 70)
+            else if (resultData.HealthParameters?.Pulse < 60 || resultData.HealthParameters?.Sys < 120 || resultData.HealthParameters?.Dias < 70)
             {
-                searchTerm = "up beat music";
+                searchTerm = "upbeat";
             }
 
             var youtubeService = new YouTubeService(new BaseClientService.Initializer()
@@ -104,8 +117,9 @@ namespace gateway.Controllers
             });
 
 
+
             var searchListRequest = youtubeService.Search.List("snippet");
-            searchListRequest.Q = searchTerm;
+            searchListRequest.Q = QueryGenerator.QueryGenerator.getQueryParameter(searchTerm);
             searchListRequest.MaxResults = 1;
             searchListRequest.Type = "video,playlist";
 
@@ -119,6 +133,94 @@ namespace gateway.Controllers
 
             return Ok(resultData);
             
+        }
+
+
+        [HttpPost]
+        public async Task<IActionResult> Post([FromBody] Parameters parameters)
+        {
+            using(var httpClient = new HttpClient())
+            {
+                var serializedObject = JsonConvert.SerializeObject(parameters);
+                var content = new StringContent(serializedObject, Encoding.UTF8, "application/json");
+                using (var response = await httpClient.PostAsync("http://localhost:3333/postVitals", content))
+                {
+                    if(response.StatusCode == System.Net.HttpStatusCode.OK)
+                    {
+                        var apiResponse = await response.Content.ReadFromJsonAsync<Parameters>();
+                        return Ok(apiResponse);
+                    }
+                    else if(response.StatusCode == System.Net.HttpStatusCode.NotFound)
+                    {
+                        var errorResponse = await response.Content.ReadAsStringAsync();
+                        return NotFound(errorResponse);
+                    }
+                    else if(response.StatusCode == System.Net.HttpStatusCode.InternalServerError)
+                    {
+                        return StatusCode(500);
+                    }
+
+                }
+
+                return BadRequest();
+            }
+        }
+
+        [HttpDelete("DeleteDataForUser/{userID}")]
+        public async Task<ActionResult> DeleteDataForUser(int userID)
+        {
+            using (var httpClient = new HttpClient())
+            {
+                using (var response = await httpClient.DeleteAsync($"http://localhost:3333/deleteVitals?userID={userID}"))
+                {
+                    if(response.StatusCode == System.Net.HttpStatusCode.OK)
+                    {
+                        
+                        return Ok();
+                    }
+                    else if(response.StatusCode == System.Net.HttpStatusCode.NotFound)
+                    {
+                        var errorResponse = await response.Content.ReadAsStringAsync();
+                        return NotFound(errorResponse);
+                    }
+                    else if(response.StatusCode == System.Net.HttpStatusCode.InternalServerError)
+                    {
+                        return StatusCode(500);
+                    }
+                    else {
+                        return BadRequest();
+                    }
+                }
+            }
+        }
+
+        [HttpPut]
+        public async Task<ActionResult> Put([FromBody] Parameters parameters)
+        {
+            using(var httpClient = new HttpClient())
+            {
+                var serializedObject = JsonConvert.SerializeObject(parameters);
+                StringContent content = new StringContent(serializedObject, Encoding.UTF8, "application/json");
+                using (var response = await httpClient.PutAsync("http://localhost:3333/updateVitals", content))
+                {
+                    if(response.StatusCode == System.Net.HttpStatusCode.OK)
+                    {
+                        var apiResponse = await response.Content.ReadFromJsonAsync<Parameters>();
+                        return Ok(apiResponse);
+                    }
+                    else if(response.StatusCode == System.Net.HttpStatusCode.NotFound)
+                    {
+                        var errorResponse = await response.Content.ReadAsStringAsync();
+                        return NotFound(errorResponse);
+                    }
+                    else if(response.StatusCode == System.Net.HttpStatusCode.InternalServerError)
+                    {
+                        return StatusCode(500);
+                    }
+                }
+
+                return BadRequest();
+            }
         }
     }
 

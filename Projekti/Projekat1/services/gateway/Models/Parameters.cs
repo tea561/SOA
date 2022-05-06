@@ -8,16 +8,19 @@ namespace gateway.Models
         // public int ID { get; set; }
 
         [JsonProperty]
-        public int SysPressure { get; set; }
+        public int Sys { get; set; }
 
         [JsonProperty]
-        public int DiasPressure { get; set; }
+        public int Dias { get; set; }
 
         [JsonProperty]
-        public int Pulse {get; set; }
+        public int Pulse { get; set; }
+
+        //[JsonProperty]
+        //public long Timestamp {get; set; }
 
         [JsonProperty]
-        public string? Time {get; set; }
+        public int UserID { get; set; }
 
     }
 
