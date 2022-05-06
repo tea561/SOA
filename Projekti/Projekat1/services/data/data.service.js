@@ -21,28 +21,38 @@ module.exports = {
 				const sysPressure = await this.influx.query(
 					`select last(*) from "sys-pressure" where userID='${req.query.userID}'`
 				);
+				if (sysPressure[0] == undefined) {
+					res.status(404);
+					res.send(`There is no entry for user with id = ${req.query.userID}.`);
+				}
 				const diasPressure = await this.influx.query(
 					`select last(*) from "dias-pressure" where userID='${req.query.userID}'`
 				);
 				const pulse = await this.influx.query(
 					`select last(*) from "pulse" where userID='${req.query.userID}'`
 				);
-				console.log(sysPressure);
 				res.send({
-					sysPressure: sysPressure[0].last_value,
-					diasPressure: diasPressure[0].last_value,
+					sys: sysPressure[0].last_value,
+					dias: diasPressure[0].last_value,
 					pulse: pulse[0].last_value,
 					userID: req.query.userID,
 					timestamp: new Date(sysPressure[0].time).getTime()
 				});
-				console.log(sysPressure[0].last_value, diasPressure[0].last_value, pulse[0].last_value);
 			}
 			catch(err){
 				console.log(err);
-				res.send(false);
+				res.status(500)
+				res.send(err);
 			}
 		},
 		async postVitals(req, res) {
+			if (req.body.userID == undefined 
+				|| req.body.sys == undefined 
+				|| req.body.dias == undefined 
+				|| req.body.pulse == undefined) {
+					res.status(400);
+					res.send("Post parameters not defined.");
+			}
 			try {
 				this.influx.writePoints([{
 					measurement: 'sys-pressure',
@@ -78,11 +88,18 @@ module.exports = {
 			}
 			catch(err) {
 				console.log(err);
-				res.send(false);
+				res.status(500);
+				res.send(err);
 			}
 		},
 		async putVitals(req, res) {
-			//FIXME: put actually posts new data
+			if (req.body.userID == undefined 
+				|| req.body.sys == undefined 
+				|| req.body.dias == undefined 
+				|| req.body.pulse == undefined) {
+					res.status(400);
+					res.send("Put parameters not defined.");
+			}
 			try {
 				const measurements = ["sys-pressure", "dias-pressure", "pulse"];
 				measurements.forEach(async (m) => {
@@ -125,7 +142,8 @@ module.exports = {
 			}
 			catch(err) {
 				console.log(err);
-				res.send(false);
+				res.status(500);
+				res.send(err);
 			}
 		},
 		async deleteVitals(req, res) {
@@ -140,7 +158,8 @@ module.exports = {
 			}
 			catch(err) {
 				console.log(err);
-				res.send(false);
+				res.status(500);
+				res.send(err);
 			}
 		}
 	},
