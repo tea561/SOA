@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using Newtonsoft.Json;
 
 namespace gateway.Models
@@ -6,7 +7,7 @@ namespace gateway.Models
     {
         // [JsonProperty]
         // public int ID { get; set; }
-
+        [Display(Name = "sys", Description = "Systolic blood pressure")]
         [JsonProperty("sys")]
         public int Sys { get; set; }
 

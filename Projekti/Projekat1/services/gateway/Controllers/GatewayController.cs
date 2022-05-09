@@ -60,10 +60,10 @@ namespace gateway.Controllers
         // }
 
         /// <summary>
-        /// Gets health parameters and recommended YouTube resource for specific user.
+        /// Gets vitals and recommended YouTube resource for specific user.
         /// </summary>
         /// <param name="userID">User ID</param>
-        /// <returns></returns>
+        /// <returns>Vitals and recommended YouTube resource.</returns>
         /// <response code="404">User not found.</response>
         [HttpGet("GetStatus/{userID}")]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -81,8 +81,6 @@ namespace gateway.Controllers
                     {
                         var parameters = await response.Content.ReadFromJsonAsync<Parameters>();
                         resultData.HealthParameters = parameters;
-                        // long time = (parameters.Timestamp != null) ? long.Parse(parameters.Timestamp) : 0L;
-                        // resultData.HealthParameters.Timestamp = (new DateTime(time)).ToString("f");
                     }
                     else if(response.StatusCode == System.Net.HttpStatusCode.NotFound)
                     {
@@ -146,9 +144,27 @@ namespace gateway.Controllers
         /// <summary>
         /// Post vital parameters for specific user.
         /// </summary>
-        /// <param name="parameters"></param>
-        /// <returns></returns>
+        /// <param name="parameters">Vital parameters</param>
+        /// <returns>True if vitals are successfully added. Otherwise, false.</returns>
+        /// <remarks>
+        ///     Sample request:
+        ///         
+        ///         POST /Gateway
+        ///         {
+        ///             "sys": 120,
+        ///             "dias": 80,
+        ///             "pulse": 90,
+        ///             "timestamp": 1652119779,
+        ///             "userID": 3
+        ///         }
+        ///
+        ///</remarks>
+        /// <response code="400">Post parameters not defined.</response>
+        /// <response code="200">Vitals successfully added.</response>
+
         [HttpPost]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<IActionResult> Post([FromBody] Parameters parameters)
         {
             using(var httpClient = new HttpClient())
@@ -178,6 +194,12 @@ namespace gateway.Controllers
             }
         }
 
+        /// <summary>
+        /// Delete vital parameters for specific user.
+        /// </summary>
+        /// <param name="userID">User ID</param>
+        /// <returns>True if vitals are successfully added. Otherwise, false.</returns>
+        /// <response code="200">Vitals successfully deleted.</response>
         [HttpDelete("DeleteDataForUser/{userID}")]
         public async Task<ActionResult> DeleteDataForUser(int userID)
         {
@@ -186,8 +208,7 @@ namespace gateway.Controllers
                 using (var response = await httpClient.DeleteAsync($"http://data:3333/deleteVitals?userID={userID}"))
                 {
                     if(response.StatusCode == System.Net.HttpStatusCode.OK)
-                    {
-                        
+                    {                       
                         return Ok();
                     }
                     else if(response.StatusCode == System.Net.HttpStatusCode.NotFound)
@@ -206,6 +227,26 @@ namespace gateway.Controllers
             }
         }
 
+        /// <summary>
+        /// Update vital parameters for specific user.
+        /// </summary>
+        /// <param name="parameters">Vital parameters</param>
+        /// <returns>True if vitals are successfully updated. Otherwise, false.</returns>
+        /// <response code="400">Put parameters not defined.</response>
+        /// <response code="200">Vitals successfully added.</response>
+        /// <remarks>
+        ///     Sample request:
+        ///         
+        ///         PUT /Gateway
+        ///         {
+        ///             "sys": 120,
+        ///             "dias": 80,
+        ///             "pulse": 90,
+        ///             "timestamp": 1652119779,
+        ///             "userID": 3
+        ///         }
+        ///
+        ///</remarks>
         [HttpPut]
         public async Task<ActionResult> Put([FromBody] Parameters parameters)
         {

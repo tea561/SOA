@@ -1,6 +1,8 @@
 "use strict"
 
 const express = require("express");
+const swaggerUi = require('swagger-ui-express');
+const swaggerDocument = require('../../swagger.json');
 const Influx = require('influx');
 const bodyParser = require('body-parser');
 
@@ -164,6 +166,7 @@ module.exports = {
         const app = express();
         app.use(bodyParser.urlencoded({ extended: false }));
         app.use(bodyParser.json());
+		app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
         app.listen(this.settings.port);
         this.initRoutes(app);
 		this.influx = new Influx.InfluxDB({
