@@ -74,7 +74,7 @@ namespace gateway.Controllers
             ResultData resultData = new ResultData();
             using(var httpClient = new HttpClient())
             {
-                using (var response = await httpClient.GetAsync($"http://localhost:3333/getVitals?userID={userID}"))
+                using (var response = await httpClient.GetAsync($"http://data:3333/getVitals?userID={userID}"))
                 {
                     
                     if(response.StatusCode == System.Net.HttpStatusCode.OK)
@@ -155,11 +155,11 @@ namespace gateway.Controllers
             {
                 var serializedObject = JsonConvert.SerializeObject(parameters);
                 var content = new StringContent(serializedObject, Encoding.UTF8, "application/json");
-                using (var response = await httpClient.PostAsync("http://localhost:3333/postVitals", content))
+                using (var response = await httpClient.PostAsync("http://data:3333/postVitals", content))
                 {
                     if(response.StatusCode == System.Net.HttpStatusCode.OK)
                     {
-                        var apiResponse = await response.Content.ReadFromJsonAsync<Parameters>();
+                        var apiResponse = await response.Content.ReadFromJsonAsync<bool>();
                         return Ok(apiResponse);
                     }
                     else if(response.StatusCode == System.Net.HttpStatusCode.NotFound)
@@ -183,7 +183,7 @@ namespace gateway.Controllers
         {
             using (var httpClient = new HttpClient())
             {
-                using (var response = await httpClient.DeleteAsync($"http://localhost:3333/deleteVitals?userID={userID}"))
+                using (var response = await httpClient.DeleteAsync($"http://data:3333/deleteVitals?userID={userID}"))
                 {
                     if(response.StatusCode == System.Net.HttpStatusCode.OK)
                     {
@@ -213,11 +213,11 @@ namespace gateway.Controllers
             {
                 var serializedObject = JsonConvert.SerializeObject(parameters);
                 StringContent content = new StringContent(serializedObject, Encoding.UTF8, "application/json");
-                using (var response = await httpClient.PutAsync("http://localhost:3333/updateVitals", content))
+                using (var response = await httpClient.PutAsync("http://data:3333/updateVitals", content))
                 {
                     if(response.StatusCode == System.Net.HttpStatusCode.OK)
                     {
-                        var apiResponse = await response.Content.ReadFromJsonAsync<Parameters>();
+                        var apiResponse = await response.Content.ReadFromJsonAsync<bool>();
                         return Ok(apiResponse);
                     }
                     else if(response.StatusCode == System.Net.HttpStatusCode.NotFound)
