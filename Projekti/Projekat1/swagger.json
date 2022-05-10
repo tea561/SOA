@@ -8,28 +8,32 @@
     "basePath": "/",
     "tags": [
         {
-            "name": "NE ZNAM STA SU TAGS",
-            "description": "OPIS OPIS"
+            "name": "Data Service"
         }
     ],
-    "schemes": ["http"],
-    "consumes": ["application/json"],
-    "produces": ["application/json"],
+    "schemes": [
+        "http"
+    ],
+    "consumes": [
+        "application/json"
+    ],
+    "produces": [
+        "application/json"
+    ],
     "paths": {
-        "/getVitals?userID=": {
+        "/getVitals/{userID}": {
             "get": {
-                "tags": ["Get Vitals"],
+                "tags": [
+                    "Data Service"
+                ],
                 "summary": "Get vital parameters for specific user",
                 "parameters": [
                     {
-                      "name": "userID",
-                      "in": "path",
-                      "description": "User ID",
-                      "required": true,
-                      "schema": {
+                        "name": "userID",
                         "type": "integer",
-                        "format": "int32"
-                      }
+                        "in": "path",
+                        "description": "User ID",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -37,35 +41,57 @@
                         "description": "User not found."
                     },
                     "200": {
-                    "description": "Success"
-                   }
+                        "description": "Success"
+                    }
                 }
             }
         },
         "/postVitals": {
             "post": {
-                "tags": ["Post Vitals"],
+                "tags": [
+                    "Data Service"
+                ],
                 "summary": "Post vital parameters for specific user.",
                 "description": "Sample request:\r\n    \r\n    POST /Gateway\r\n    {\r\n        \"sys\": 120,\r\n        \"dias\": 80,\r\n        \"pulse\": 90,\r\n        \"timestamp\": 1652119779,\r\n        \"userID\": 3\r\n    }",
-                "requestBody": {
-                    "description": "Vital parameters"
-                },
-                "parameters": [{
-                    "in": "body",
-                    "name": "vitals",
-                    "description": "Vital parameters for a user.",
-                    "schema": {
-                        "type": "object",
-                        "required": ["sys", "dias", "pulse", "userID", "timestamp"],
-                        "properties": {
-                            "sys": "integer",
-                            "dias": "integer",
-                            "pulse": "integer",
-                            "userID": "integer",
-                            "timestamp": "integer"
+                "parameters": [
+                    {
+                        "in": "body",
+                        "name": "vitals",
+                        "description": "Vital parameters for a user.",
+                        "schema": {
+                            "type": "object",
+                            "required": [
+                                "sys",
+                                "dias",
+                                "pulse",
+                                "userID",
+                                "timestamp"
+                            ],
+                            "properties": {
+                                "sys": {
+                                    "type": "integer",
+                                    "format": "int32"
+                                },
+                                "dias": {
+                                    "type": "integer",
+                                    "format": "int32"
+                                },
+                                "pulse": {
+                                    "type": "integer",
+                                    "format": "int32"
+                                },
+                                "userID": {
+                                    "type": "integer",
+                                    "format": "int32"
+                                },
+                                "timestamp": {
+                                    "type": "integer",
+                                    "format": "int32"
+                                }
+                            }
                         }
                     }
-                }],
+                ],
                 "responses": {
                     "400": {
                         "description": "Post parameters not defined."
@@ -74,17 +100,57 @@
                         "description": "Vitals successfully added."
                     }
                 },
-                "produces": ["application/json"]
+                "produces": [
+                    "application/json"
+                ]
             }
         },
-        "/putVitals":{
+        "/putVitals": {
             "put": {
-                "tags": ["Put Vitals"],
+                "tags": [
+                    "Data Service"
+                ],
                 "summary": "Update vital parameters for specific user.",
                 "description": "Sample request:\r\n    \r\n    POST /Gateway\r\n    {\r\n        \"sys\": 120,\r\n        \"dias\": 80,\r\n        \"pulse\": 90,\r\n        \"timestamp\": 1652119779,\r\n        \"userID\": 3\r\n    }",
-                "requestBody": {
-                    "description": "Vital parameters"
-                },
+                "parameters": [
+                    {
+                        "in": "body",
+                        "name": "vitals",
+                        "description": "Vital parameters for a user.",
+                        "schema": {
+                            "type": "object",
+                            "required": [
+                                "sys",
+                                "dias",
+                                "pulse",
+                                "userID",
+                                "timestamp"
+                            ],
+                            "properties": {
+                                "sys": {
+                                    "type": "integer",
+                                    "format": "int32"
+                                },
+                                "dias": {
+                                    "type": "integer",
+                                    "format": "int32"
+                                },
+                                "pulse": {
+                                    "type": "integer",
+                                    "format": "int32"
+                                },
+                                "userID": {
+                                    "type": "integer",
+                                    "format": "int32"
+                                },
+                                "timestamp": {
+                                    "type": "integer",
+                                    "format": "int32"
+                                }
+                            }
+                        }
+                    }
+                ],
                 "responses": {
                     "400": {
                         "description": "Put parameters not defined."
@@ -93,34 +159,32 @@
                         "description": "Vitals successfully updated."
                     }
                 },
-                "produces": ["application/json"]
+                "produces": [
+                    "application/json"
+                ]
             }
-        }, 
-        "/deleteVitals?userID=": {
+        },
+        "/deleteVitals{userID}": {
             "delete": {
                 "tags": [
-                    "Delete Vitals"
-                  ],
+                    "Data Service"
+                ],
                 "summary": "Delete vital parameters for specific user.",
                 "parameters": [
                     {
-                      "name": "userID",
-                      "in": "path",
-                      "description": "User ID",
-                      "required": true,
-                      "schema": {
+                        "name": "userID",
                         "type": "integer",
-                        "format": "int32"
-                      }
+                        "in": "path",
+                        "description": "User ID",
+                        "required": true
                     }
                 ],
                 "responses": {
                     "200": {
-                      "description": "Vitals successfully deleted."
+                        "description": "Vitals successfully deleted."
                     }
                 }
             }
         }
     }
 }
-
