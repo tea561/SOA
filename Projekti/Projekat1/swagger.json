@@ -5,10 +5,11 @@
         "title": "Data Service",
         "description": "Express.js service as Data Service"
     },
+    "host": "localhost:3333",
     "basePath": "/",
     "tags": [
         {
-            "name": "Data Service"
+            "name": "Vitals"
         }
     ],
     "schemes": [
@@ -21,17 +22,17 @@
         "application/json"
     ],
     "paths": {
-        "/getVitals/{userID}": {
+        "/getVitals": {
             "get": {
                 "tags": [
-                    "Data Service"
+                    "Vitals"
                 ],
                 "summary": "Get vital parameters for specific user",
                 "parameters": [
                     {
                         "name": "userID",
                         "type": "integer",
-                        "in": "path",
+                        "in": "query",
                         "description": "User ID",
                         "required": true
                     }
@@ -49,7 +50,7 @@
         "/postVitals": {
             "post": {
                 "tags": [
-                    "Data Service"
+                    "Vitals"
                 ],
                 "summary": "Post vital parameters for specific user.",
                 "description": "Sample request:\r\n    \r\n    POST /Gateway\r\n    {\r\n        \"sys\": 120,\r\n        \"dias\": 80,\r\n        \"pulse\": 90,\r\n        \"timestamp\": 1652119779,\r\n        \"userID\": 3\r\n    }",
@@ -59,36 +60,7 @@
                         "name": "vitals",
                         "description": "Vital parameters for a user.",
                         "schema": {
-                            "type": "object",
-                            "required": [
-                                "sys",
-                                "dias",
-                                "pulse",
-                                "userID",
-                                "timestamp"
-                            ],
-                            "properties": {
-                                "sys": {
-                                    "type": "integer",
-                                    "format": "int32"
-                                },
-                                "dias": {
-                                    "type": "integer",
-                                    "format": "int32"
-                                },
-                                "pulse": {
-                                    "type": "integer",
-                                    "format": "int32"
-                                },
-                                "userID": {
-                                    "type": "integer",
-                                    "format": "int32"
-                                },
-                                "timestamp": {
-                                    "type": "integer",
-                                    "format": "int32"
-                                }
-                            }
+                            "$ref": "#/definitions/Vitals"
                         }
                     }
                 ],
@@ -105,49 +77,20 @@
                 ]
             }
         },
-        "/putVitals": {
+        "/updateVitals": {
             "put": {
                 "tags": [
-                    "Data Service"
+                    "Vitals"
                 ],
                 "summary": "Update vital parameters for specific user.",
-                "description": "Sample request:\r\n    \r\n    POST /Gateway\r\n    {\r\n        \"sys\": 120,\r\n        \"dias\": 80,\r\n        \"pulse\": 90,\r\n        \"timestamp\": 1652119779,\r\n        \"userID\": 3\r\n    }",
+                "description": "Sample request:\r\n    \r\n    PUT /Gateway\r\n    {\r\n        \"sys\": 120,\r\n        \"dias\": 80,\r\n        \"pulse\": 90,\r\n        \"timestamp\": 1652119779,\r\n        \"userID\": 3\r\n    }",
                 "parameters": [
                     {
                         "in": "body",
                         "name": "vitals",
                         "description": "Vital parameters for a user.",
                         "schema": {
-                            "type": "object",
-                            "required": [
-                                "sys",
-                                "dias",
-                                "pulse",
-                                "userID",
-                                "timestamp"
-                            ],
-                            "properties": {
-                                "sys": {
-                                    "type": "integer",
-                                    "format": "int32"
-                                },
-                                "dias": {
-                                    "type": "integer",
-                                    "format": "int32"
-                                },
-                                "pulse": {
-                                    "type": "integer",
-                                    "format": "int32"
-                                },
-                                "userID": {
-                                    "type": "integer",
-                                    "format": "int32"
-                                },
-                                "timestamp": {
-                                    "type": "integer",
-                                    "format": "int32"
-                                }
-                            }
+                            "$ref": "#/definitions/Vitals"
                         }
                     }
                 ],
@@ -164,17 +107,17 @@
                 ]
             }
         },
-        "/deleteVitals{userID}": {
+        "/deleteVitals": {
             "delete": {
                 "tags": [
-                    "Data Service"
+                    "Vitals"
                 ],
                 "summary": "Delete vital parameters for specific user.",
                 "parameters": [
                     {
                         "name": "userID",
                         "type": "integer",
-                        "in": "path",
+                        "in": "query",
                         "description": "User ID",
                         "required": true
                     }
@@ -186,5 +129,33 @@
                 }
             }
         }
+    },
+    "definitions": {
+          "Vitals": {
+            "type": "object",
+            "properties": {
+              "sys": {
+                "type": "integer",
+                "format": "int32"
+              },
+              "dias": {
+                "type": "integer",
+                "format": "int32"
+              },
+              "pulse": {
+                "type": "integer",
+                "format": "int32"
+              },
+              "timestamp": {
+                "type": "integer",
+                "format": "int64"
+              },
+              "userID": {
+                "type": "integer",
+                "format": "int32"
+              }
+            
+            }
+        }
     }
-}
+} 
