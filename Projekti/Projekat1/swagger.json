@@ -1,5 +1,5 @@
 {
-    "openapi": "3.0.",
+    "swagger": "2.0",
     "info": {
         "version": "1.0.0",
         "title": "Data Service",
@@ -18,7 +18,7 @@
     "paths": {
         "/getVitals?userID=": {
             "get": {
-                "tags": ["TAGZAGET"],
+                "tags": ["Get Vitals"],
                 "summary": "Get vital parameters for specific user",
                 "parameters": [
                     {
@@ -44,12 +44,28 @@
         },
         "/postVitals": {
             "post": {
-                "tags": ["TAGZAPOST"],
+                "tags": ["Post Vitals"],
                 "summary": "Post vital parameters for specific user.",
                 "description": "Sample request:\r\n    \r\n    POST /Gateway\r\n    {\r\n        \"sys\": 120,\r\n        \"dias\": 80,\r\n        \"pulse\": 90,\r\n        \"timestamp\": 1652119779,\r\n        \"userID\": 3\r\n    }",
                 "requestBody": {
                     "description": "Vital parameters"
                 },
+                "parameters": [{
+                    "in": "body",
+                    "name": "vitals",
+                    "description": "Vital parameters for a user.",
+                    "schema": {
+                        "type": "object",
+                        "required": ["sys", "dias", "pulse", "userID", "timestamp"],
+                        "properties": {
+                            "sys": "integer",
+                            "dias": "integer",
+                            "pulse": "integer",
+                            "userID": "integer",
+                            "timestamp": "integer"
+                        }
+                    }
+                }],
                 "responses": {
                     "400": {
                         "description": "Post parameters not defined."
@@ -63,7 +79,7 @@
         },
         "/putVitals":{
             "put": {
-                "tags": ["TAGZAPUT"],
+                "tags": ["Put Vitals"],
                 "summary": "Update vital parameters for specific user.",
                 "description": "Sample request:\r\n    \r\n    POST /Gateway\r\n    {\r\n        \"sys\": 120,\r\n        \"dias\": 80,\r\n        \"pulse\": 90,\r\n        \"timestamp\": 1652119779,\r\n        \"userID\": 3\r\n    }",
                 "requestBody": {
@@ -81,27 +97,29 @@
             }
         }, 
         "/deleteVitals?userID=": {
-            "tags": [
-                "TAGZADELETE"
-              ],
-              "summary": "Delete vital parameters for specific user.",
-              "parameters": [
-                {
-                  "name": "userID",
-                  "in": "path",
-                  "description": "User ID",
-                  "required": true,
-                  "schema": {
-                    "type": "integer",
-                    "format": "int32"
-                  }
+            "delete": {
+                "tags": [
+                    "Delete Vitals"
+                  ],
+                "summary": "Delete vital parameters for specific user.",
+                "parameters": [
+                    {
+                      "name": "userID",
+                      "in": "path",
+                      "description": "User ID",
+                      "required": true,
+                      "schema": {
+                        "type": "integer",
+                        "format": "int32"
+                      }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                      "description": "Vitals successfully deleted."
+                    }
                 }
-              ],
-              "responses": {
-                "200": {
-                  "description": "Vitals successfully deleted."
-                }
-              }
+            }
         }
     }
 }
