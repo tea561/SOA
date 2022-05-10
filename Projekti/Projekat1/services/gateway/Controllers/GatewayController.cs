@@ -6,6 +6,7 @@ using Newtonsoft.Json;
 using Google.Apis.YouTube.v3;
 using Google.Apis.Services;
 using gateway.Models;
+using Microsoft.Extensions.Configuration;
 
 namespace gateway.Controllers
 {
@@ -14,8 +15,10 @@ namespace gateway.Controllers
 
     public class GatewayController : ControllerBase
     {
-        public GatewayController()
+        private readonly IConfiguration _configuration;
+        public GatewayController(IConfiguration configuration)
         {
+            _configuration = configuration;
 
         }
         // [HttpGet]
@@ -118,7 +121,8 @@ namespace gateway.Controllers
 
             var youtubeService = new YouTubeService(new BaseClientService.Initializer()
             {
-                ApiKey = "AIzaSyCfhFoxWD-tZGM7ssl7U2OJVTgmy0GqjxM",
+                //ApiKey = "AIzaSyCfhFoxWD-tZGM7ssl7U2OJVTgmy0GqjxM",
+                ApiKey = _configuration["ApiKey"],
                 ApplicationName = this.GetType().ToString()
             });
 
@@ -162,7 +166,7 @@ namespace gateway.Controllers
         /// <response code="400">Post parameters not defined.</response>
         /// <response code="200">Vitals successfully added.</response>
 
-        [HttpPost]
+        [HttpPost("PostVitals")]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<IActionResult> Post([FromBody] Parameters parameters)
@@ -247,7 +251,7 @@ namespace gateway.Controllers
         ///         }
         ///
         ///</remarks>
-        [HttpPut]
+        [HttpPut("UpdateVitals")]
         public async Task<ActionResult> Put([FromBody] Parameters parameters)
         {
             using(var httpClient = new HttpClient())

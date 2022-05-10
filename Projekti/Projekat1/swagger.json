@@ -136,23 +136,28 @@
             "properties": {
               "sys": {
                 "type": "integer",
-                "format": "int32"
+                "format": "int32",
+                "default": 120
               },
               "dias": {
                 "type": "integer",
-                "format": "int32"
+                "format": "int32",
+                "default": 80
               },
               "pulse": {
                 "type": "integer",
-                "format": "int32"
+                "format": "int32",
+                "default": 70
               },
               "timestamp": {
                 "type": "integer",
-                "format": "int64"
+                "format": "int64",
+                "default": 1234567890123
               },
               "userID": {
                 "type": "integer",
-                "format": "int32"
+                "format": "int32",
+                "default": 1
               }
             
             }
