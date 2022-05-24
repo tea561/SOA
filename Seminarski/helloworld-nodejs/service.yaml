@@ -1,0 +1,14 @@
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: helloworld-example
+  namespace: default
+spec:
+  template:
+    spec:
+      containers:
+      - image: docker.io/tea39/hello-example:latest
+        imagePullPolicy: Always
+        env:
+        - name: TARGET
+          value: "Node.js Sample v1"
