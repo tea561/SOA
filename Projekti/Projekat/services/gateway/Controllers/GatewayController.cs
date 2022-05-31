@@ -308,21 +308,5 @@ namespace gateway.Controllers
 
             }
         }
-
-        private async Task Disconnect_Client()
-        {
-            var mqttFactory = new MqttFactory();
-
-            using (var mqttClient = mqttFactory.CreateMqttClient())
-            {
-                var disconnectOptions = new MqttClientDisconnectOptionsBuilder()
-                .WithReason(MqttClientDisconnectReason.NormalDisconnection)
-                .Build();
-
-                await mqttClient.DisconnectAsync(disconnectOptions);
-
-                Console.WriteLine("The MQTT client is disconnected.");
-            }
-        }
     }
 }
