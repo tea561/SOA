@@ -7,6 +7,8 @@ using Google.Apis.YouTube.v3;
 using Google.Apis.Services;
 using gateway.Models;
 using Microsoft.Extensions.Configuration;
+using MQTTnet;
+using MQTTnet.Client.Options;
 
 namespace gateway.Controllers
 {
@@ -19,48 +21,8 @@ namespace gateway.Controllers
         public GatewayController(IConfiguration configuration)
         {
             _configuration = configuration;
-
+            Connect_Client();
         }
-        // [HttpGet]
-        // public async Task<IActionResult> Get()
-        // {
-        //     var youtubeService = new YouTubeService(new BaseClientService.Initializer()
-        //     {
-        //         ApiKey = "AIzaSyCfhFoxWD-tZGM7ssl7U2OJVTgmy0GqjxM",
-        //         ApplicationName = this.GetType().ToString()
-        //     });
-
-        //     var searchListRequest = youtubeService.Search.List("snippet");
-        //     searchListRequest.Q = "rock playlist";
-        //     searchListRequest.MaxResults = 13;
-        //     searchListRequest.Type = "video,playlist";
-
-        //     var searchListResponse = await searchListRequest.ExecuteAsync();
-
-        //     // List<string> results = new List<string>();
-
-        //     // foreach (var searchResult in searchListResponse.Items)
-        //     // {
-        //     //     switch (searchResult.Id.Kind)
-        //     //     {
-        //     //         case "youtube#video":
-        //     //             results.Add(String.Format("{0} ({1})", searchResult.Snippet.Title, searchResult.Id.VideoId));
-        //     //             break;
-
-        //     //         case "youtube#channel":
-        //     //             results.Add(String.Format("{0} ({1})", searchResult.Snippet.Title, searchResult.Id.ChannelId));
-        //     //             break;
-
-        //     //         case "youtube#playlist":
-        //     //             results.Add(String.Format("{0} ({1})", searchResult.Snippet.Title, searchResult.Id.PlaylistId));
-        //     //             break;
-        //     //     }
-        //     // }
-
-        //     return Ok(searchListResponse);
-
-
-        // }
 
         /// <summary>
         /// Gets vitals and recommended YouTube resource for specific user.
@@ -73,24 +35,24 @@ namespace gateway.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<IActionResult> GetStatus(int userID)
         {
-            
+
             ResultData resultData = new ResultData();
-            using(var httpClient = new HttpClient())
+            using (var httpClient = new HttpClient())
             {
                 using (var response = await httpClient.GetAsync($"http://data:3333/getVitals?userID={userID}"))
                 {
-                    
-                    if(response.StatusCode == System.Net.HttpStatusCode.OK)
+
+                    if (response.StatusCode == System.Net.HttpStatusCode.OK)
                     {
                         var parameters = await response.Content.ReadFromJsonAsync<Parameters>();
                         resultData.HealthParameters = parameters;
                     }
-                    else if(response.StatusCode == System.Net.HttpStatusCode.NotFound)
+                    else if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
                     {
                         var errorResponse = await response.Content.ReadAsStringAsync();
                         return NotFound(errorResponse);
                     }
-                    else if(response.StatusCode == System.Net.HttpStatusCode.InternalServerError)
+                    else if (response.StatusCode == System.Net.HttpStatusCode.InternalServerError)
                     {
                         //var errorResponse = await response.Content.ReadAsStringAsync();
                         return StatusCode(500);
@@ -104,14 +66,15 @@ namespace gateway.Controllers
 
             string searchTerm = "neutral";
 
-            if(resultData.HealthParameters?.Sys > 130 || resultData.HealthParameters?.Dias > 90)
-            {   
-                if(resultData.HealthParameters?.Pulse > 80)
+            if (resultData.HealthParameters?.Sys > 130 || resultData.HealthParameters?.Dias > 90)
+            {
+                if (resultData.HealthParameters?.Pulse > 80)
                     searchTerm = "calm";
                 else
                     searchTerm = "classical";
             }
-            else if(resultData.HealthParameters?.Pulse > 80) {
+            else if (resultData.HealthParameters?.Pulse > 80)
+            {
                 searchTerm = "relaxing";
             }
             else if (resultData.HealthParameters?.Pulse < 60 || resultData.HealthParameters?.Sys < 120 || resultData.HealthParameters?.Dias < 70)
@@ -142,7 +105,7 @@ namespace gateway.Controllers
             resultData.ResourceUrl = $"https://www.youtube.com/watch?v={resourceId}";
 
             return Ok(resultData);
-            
+
         }
 
         /// <summary>
@@ -171,23 +134,23 @@ namespace gateway.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<IActionResult> Post([FromBody] Parameters parameters)
         {
-            using(var httpClient = new HttpClient())
+            using (var httpClient = new HttpClient())
             {
                 var serializedObject = JsonConvert.SerializeObject(parameters);
                 var content = new StringContent(serializedObject, Encoding.UTF8, "application/json");
                 using (var response = await httpClient.PostAsync("http://data:3333/postVitals", content))
                 {
-                    if(response.StatusCode == System.Net.HttpStatusCode.OK)
+                    if (response.StatusCode == System.Net.HttpStatusCode.OK)
                     {
                         var apiResponse = await response.Content.ReadFromJsonAsync<bool>();
                         return Ok(apiResponse);
                     }
-                    else if(response.StatusCode == System.Net.HttpStatusCode.NotFound)
+                    else if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
                     {
                         var errorResponse = await response.Content.ReadAsStringAsync();
                         return NotFound(errorResponse);
                     }
-                    else if(response.StatusCode == System.Net.HttpStatusCode.InternalServerError)
+                    else if (response.StatusCode == System.Net.HttpStatusCode.InternalServerError)
                     {
                         return StatusCode(500);
                     }
@@ -211,20 +174,21 @@ namespace gateway.Controllers
             {
                 using (var response = await httpClient.DeleteAsync($"http://data:3333/deleteVitals?userID={userID}"))
                 {
-                    if(response.StatusCode == System.Net.HttpStatusCode.OK)
-                    {                       
+                    if (response.StatusCode == System.Net.HttpStatusCode.OK)
+                    {
                         return Ok();
                     }
-                    else if(response.StatusCode == System.Net.HttpStatusCode.NotFound)
+                    else if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
                     {
                         var errorResponse = await response.Content.ReadAsStringAsync();
                         return NotFound(errorResponse);
                     }
-                    else if(response.StatusCode == System.Net.HttpStatusCode.InternalServerError)
+                    else if (response.StatusCode == System.Net.HttpStatusCode.InternalServerError)
                     {
                         return StatusCode(500);
                     }
-                    else {
+                    else
+                    {
                         return BadRequest();
                     }
                 }
@@ -254,23 +218,23 @@ namespace gateway.Controllers
         [HttpPut("UpdateVitals")]
         public async Task<ActionResult> Put([FromBody] Parameters parameters)
         {
-            using(var httpClient = new HttpClient())
+            using (var httpClient = new HttpClient())
             {
                 var serializedObject = JsonConvert.SerializeObject(parameters);
                 StringContent content = new StringContent(serializedObject, Encoding.UTF8, "application/json");
                 using (var response = await httpClient.PutAsync("http://data:3333/updateVitals", content))
                 {
-                    if(response.StatusCode == System.Net.HttpStatusCode.OK)
+                    if (response.StatusCode == System.Net.HttpStatusCode.OK)
                     {
                         var apiResponse = await response.Content.ReadFromJsonAsync<bool>();
                         return Ok(apiResponse);
                     }
-                    else if(response.StatusCode == System.Net.HttpStatusCode.NotFound)
+                    else if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
                     {
                         var errorResponse = await response.Content.ReadAsStringAsync();
                         return NotFound(errorResponse);
                     }
-                    else if(response.StatusCode == System.Net.HttpStatusCode.InternalServerError)
+                    else if (response.StatusCode == System.Net.HttpStatusCode.InternalServerError)
                     {
                         return StatusCode(500);
                     }
@@ -279,7 +243,42 @@ namespace gateway.Controllers
                 return BadRequest();
             }
         }
-    }
 
-    
+        public static async Task Connect_Client()
+        {
+            /*
+             * This sample creates a simple MQTT client and connects to a public broker.
+             *
+             * Always dispose the client when it is no longer used.
+             * The default version of MQTT is 3.1.1.
+             */
+
+            var mqttFactory = new MqttFactory();
+
+            using (var mqttClient = mqttFactory.CreateMqttClient())
+            {
+                // Use builder classes where possible in this project.
+                var mqttClientOptions = new MqttClientOptionsBuilder()
+                    .WithTcpServer("172.19.0.5", 1883)
+                    .WithClientId("gateway")
+                    .Build();
+
+
+                // This will throw an exception if the server is not available.
+                // The result from this message returns additional data which was sent 
+                // from the server. Please refer to the MQTT protocol specification for details.
+                var response = await mqttClient.ConnectAsync(mqttClientOptions, CancellationToken.None);
+
+                Console.WriteLine("The MQTT client is connected.");
+
+                Console.WriteLine(response.ResultCode);
+
+                // Send a clean disconnect to the server by calling _DisconnectAsync_. Without this the TCP connection
+                // gets dropped and the server will handle this as a non clean disconnect (see MQTT spec for details).
+                //var mqttClientDisconnectOptions = mqttFactory.CreateClientDisconnectOptionsBuilder().Build();
+
+                //await mqttClient.DisconnectAsync(mqttClientDisconnectOptions, CancellationToken.None);
+            }
+        }
+    }
 }

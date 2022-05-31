@@ -1,63 +1,65 @@
-version: '3.3'
+version: "3.3"
 services:
-    influx:
-      image: influxdb:1.8
-      environment:
-        - INFLUXDB_ADMIN_ENABLED=true
-      volumes:
-        - influxdata:/var/lib/influx.db
-      ports:
-        - '8086:8086'
-    data:
-      build:
-        context: .
-      env_file: docker-compose.env
-      environment: 
-        NODEID: "node-data"
-        SERVICES: data
-        ADMIN_USER: admin
-        ADMIN_PASSWORD: admin
-        INFLUXDB_DATABASE: vitals
-        INFLUXDB_HOST: influx
-      ports:
-        - '3333:3333'
-      depends_on:
-        - influx
-    gateway:
-      build: 
-        context: ./services/gateway
-      image: gateway
-      ports:
-        - "5000:80"
-    grafana:
-      ports:
-        - 4200:3000
-      image:
-        grafana/grafana:3.1.1
-      depends_on:
-        - influx
-      links: 
-        - influx
-      volumes: 
-        - influxdata:/var/lib/influx.db
-    mqtt:
-      image: eclipse-mosquitto:1.6.8
-      restart: always
-      volumes:
-        - ./mosquitto/config:/mosquitto/config
-        - ./mosquitto/data:/mosquitto/data
-        - ./mosquitto/log:/mosquitto/log
-      ports:
-        - 1883:1883
-        - 9001:9001
-    analytics:
-      build: 
-        context: ./services/analytics
-      image: analytics
-      ports:
-        - "4000:4000"
-
-
+  influx:
+    image: influxdb:1.8
+    environment:
+      - INFLUXDB_ADMIN_ENABLED=true
+    volumes:
+      - influxdata:/var/lib/influx.db
+    ports:
+      - "8086:8086"
+  data:
+    build:
+      context: .
+    env_file: docker-compose.env
+    environment:
+      NODEID: "node-data"
+      SERVICES: data
+      ADMIN_USER: admin
+      ADMIN_PASSWORD: admin
+      INFLUXDB_DATABASE: vitals
+      INFLUXDB_HOST: influx
+    ports:
+      - "3333:3333"
+    depends_on:
+      - influx
+  gateway:
+    build:
+      context: ./services/gateway
+    image: gateway
+    ports:
+      - "5000:80"
+  grafana:
+    ports:
+      - 4200:3000
+    image: grafana/grafana:3.1.1
+    depends_on:
+      - influx
+    links:
+      - influx
+    volumes:
+      - influxdata:/var/lib/influx.db
+  mqtt:
+    container_name: mqtt
+    hostname: mqtt
+    image: eclipse-mosquitto:2.0.14
+    restart: always
+    volumes:
+      - ./mosquitto/config:/mosquitto/config
+      - ./mosquitto/data:/mosquitto/data
+      - ./mosquitto/log:/mosquitto/log
+    expose:
+      - 1883
+      - 9001
+    ports:
+      - 1883:1883
+      - 9001:9001
+  analytics:
+    build:
+      context: ./services/analytics
+    image: analytics
+    ports:
+      - "4000:4000"
 
 volumes:
   influxdata:
