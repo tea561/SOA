@@ -8,7 +8,8 @@ using Google.Apis.Services;
 using gateway.Models;
 using Microsoft.Extensions.Configuration;
 using MQTTnet;
-using MQTTnet.Client.Options;
+using MQTTnet.Client;
+
 
 namespace gateway.Controllers
 {
@@ -22,6 +23,7 @@ namespace gateway.Controllers
         {
             _configuration = configuration;
             Connect_Client();
+            //Disconnect_Client();
         }
 
         /// <summary>
@@ -244,7 +246,7 @@ namespace gateway.Controllers
             }
         }
 
-        public static async Task Connect_Client()
+        public async Task Connect_Client()
         {
             /*
              * This sample creates a simple MQTT client and connects to a public broker.
@@ -259,7 +261,7 @@ namespace gateway.Controllers
             {
                 // Use builder classes where possible in this project.
                 var mqttClientOptions = new MqttClientOptionsBuilder()
-                    .WithTcpServer("172.19.0.5", 1883)
+                    .WithTcpServer("mqtt", 1883)
                     .WithClientId("gateway")
                     .Build();
 
@@ -273,11 +275,35 @@ namespace gateway.Controllers
 
                 Console.WriteLine(response.ResultCode);
 
+                var disconnectOptions = new MqttClientDisconnectOptionsBuilder()
+                .WithReason(MqttClientDisconnectReason.NormalDisconnection)
+                .Build();
+
+                await mqttClient.DisconnectAsync(disconnectOptions);
+
+                Console.WriteLine("The MQTT client is disconnected.");
+
                 // Send a clean disconnect to the server by calling _DisconnectAsync_. Without this the TCP connection
                 // gets dropped and the server will handle this as a non clean disconnect (see MQTT spec for details).
                 //var mqttClientDisconnectOptions = mqttFactory.CreateClientDisconnectOptionsBuilder().Build();
 
                 //await mqttClient.DisconnectAsync(mqttClientDisconnectOptions, CancellationToken.None);
+            }
+        }
+
+        public async Task Disconnect_Client()
+        {
+            var mqttFactory = new MqttFactory();
+
+            using (var mqttClient = mqttFactory.CreateMqttClient())
+            {
+                var disconnectOptions = new MqttClientDisconnectOptionsBuilder()
+                .WithReason(MqttClientDisconnectReason.NormalDisconnection)
+                .Build();
+
+                await mqttClient.DisconnectAsync(disconnectOptions);
+
+                Console.WriteLine("The MQTT client is disconnected.");
             }
         }
     }

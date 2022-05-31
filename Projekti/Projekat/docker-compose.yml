@@ -2,6 +2,10 @@ version: "3.3"
 services:
   influx:
     image: influxdb:1.8
+    networks:
+      healthapp:
+        aliases:
+          - influx
     environment:
       - INFLUXDB_ADMIN_ENABLED=true
     volumes:
@@ -19,6 +23,10 @@ services:
       ADMIN_PASSWORD: admin
       INFLUXDB_DATABASE: vitals
       INFLUXDB_HOST: influx
+    networks:
+      healthapp:
+        aliases:
+          - data
     ports:
       - "3333:3333"
     depends_on:
@@ -27,12 +35,20 @@ services:
     build:
       context: ./services/gateway
     image: gateway
+    networks:
+      healthapp:
+        aliases:
+          - gateway
     ports:
       - "5000:80"
   grafana:
     ports:
       - 4200:3000
     image: grafana/grafana:3.1.1
+    networks:
+      healthapp:
+        aliases:
+          - grafana
     depends_on:
       - influx
     links:
@@ -44,6 +60,10 @@ services:
     hostname: mqtt
     image: eclipse-mosquitto:2.0.14
     restart: always
+    networks:
+      healthapp:
+        aliases:
+          - mqtt
     volumes:
       - ./mosquitto/config:/mosquitto/config
       - ./mosquitto/data:/mosquitto/data
@@ -58,8 +78,15 @@ services:
     build:
       context: ./services/analytics
     image: analytics
+    networks:
+      healthapp:
+        aliases:
+          - analytics
     ports:
       - "4000:4000"
 
 volumes:
   influxdata:
+
+networks:
+  healthapp:
