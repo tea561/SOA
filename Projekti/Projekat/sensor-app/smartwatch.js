@@ -35,5 +35,5 @@ const interval = setInterval(() => {
       }).catch((err) => {
           console.error(err);
       });
-}, 3000);
+}, 7000);
 
