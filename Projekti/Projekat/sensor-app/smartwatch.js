@@ -8,13 +8,10 @@ const userID = 9;
 
 let records = [];
 let currentRecord = 0;
-let count = 0;
 
-//TODO: change url to gateway service
-const url = "http://localhost:3333/postVitals";
+const url = "http://localhost:5000/api/Gateway/PostVitals";
 const parser = parse.parse({ columns: true }, function (err, recs) {
   records = recs;
-  count = records.length;
 });
 
 fs.createReadStream("./Blood_Pressure.csv").pipe(parser);
@@ -28,8 +25,9 @@ const interval = setInterval(() => {
     userID,
     timestamp,
   };
-  currentRecord++;
-  axios.post('http://localhost:3333/postVitals', params)
+  currentRecord = (currentRecord + 1) % records.length;
+
+  axios.post(url, params)
       .then((res) => {
           console.log(params)
           console.log(`Status: ${res.status}`);
@@ -37,5 +35,5 @@ const interval = setInterval(() => {
       }).catch((err) => {
           console.error(err);
       });
-}, 5000);
+}, 3000);
 
