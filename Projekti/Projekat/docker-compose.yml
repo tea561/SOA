@@ -118,11 +118,6 @@ services:
           - notification
     ports:
       - "5007:80"
-    expose:
-      - 1883
-      - 9001
-
-
 
 volumes:
   influxdata:
