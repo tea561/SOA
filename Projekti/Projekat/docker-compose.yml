@@ -78,12 +78,22 @@ services:
     build:
       context: ./services/analytics
     image: analytics
+    restart: unless-stopped
     networks:
       healthapp:
         aliases:
           - analytics
     ports:
-      - "4000:4000"
+      - "5005:5005"
+    environment:
+      MONGODB_DATABASE: analyticsdb
+      MONGODB_USERNAME: userdb
+      MONGODB_PASSWORD: passworddb
+      MONGODB_HOSTNAME: mongodb
+    volumes:
+      - appdata:/var/www
+    depends_on:
+      - mongodb
   manager:
     image: emqx/ekuiper-manager:1.4
     container_name: manager
@@ -118,9 +128,33 @@ services:
           - notification
     ports:
       - "5007:80"
+  
+  mongodb:
+    image: mongo:latest
+    container_name: mongodb
+    hostname: mongodb
+    restart: unless-stopped
+    command: mongod --auth
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: userdb
+      MONGO_INITDB_ROOT_PASSWORD: passworddb
+      MONGO_INITDB_DATABASE: analyticsdb
+      MONGODB_DATA_DIR: /data/db
+      MONDODB_LOG_DIR: /dev/null
+    ports:
+      - "27017:27017"
+    networks:
+      healthapp:
+        aliases:
+          - mongodb
+    volumes:
+      - mongodbdata:/data/db
+  
 
 volumes:
   influxdata:
+  mongodbdata:
+  appdata:
 
 networks:
   healthapp:
