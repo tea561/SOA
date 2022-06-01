@@ -107,6 +107,22 @@ services:
     environment:
       MQTT_SOURCE__DEFAULT__SERVERS: "[tcp://mqtt:1883]"
 
+  notification:
+    container_name: notification
+    build:
+      context: ./services/notification
+    image: notification
+    networks:
+      healthapp:
+        aliases:
+          - notification
+    ports:
+      - "5007:80"
+    expose:
+      - 1883
+      - 9001
+
+
 
 volumes:
   influxdata:

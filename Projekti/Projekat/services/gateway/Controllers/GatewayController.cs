@@ -22,8 +22,6 @@ namespace gateway.Controllers
         public GatewayController(IConfiguration configuration)
         {
             _configuration = configuration;
-            //Connect_Client();
-            //Disconnect_Client();
         }
 
         /// <summary>
@@ -56,7 +54,6 @@ namespace gateway.Controllers
                     }
                     else if (response.StatusCode == System.Net.HttpStatusCode.InternalServerError)
                     {
-                        //var errorResponse = await response.Content.ReadAsStringAsync();
                         return StatusCode(500);
                     }
                     else
@@ -86,7 +83,6 @@ namespace gateway.Controllers
 
             var youtubeService = new YouTubeService(new BaseClientService.Initializer()
             {
-                //ApiKey = "AIzaSyCfhFoxWD-tZGM7ssl7U2OJVTgmy0GqjxM",
                 ApiKey = _configuration["ApiKey"],
                 ApplicationName = this.GetType().ToString()
             });
@@ -145,7 +141,7 @@ namespace gateway.Controllers
                     if (response.StatusCode == System.Net.HttpStatusCode.OK)
                     {
                         var apiResponse = await response.Content.ReadFromJsonAsync<bool>();
-                        await this.Connect_Client(serializedObject);
+                        await this.PublishVitals(serializedObject);
                         return Ok(apiResponse);
                     }
                     else if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
@@ -247,20 +243,12 @@ namespace gateway.Controllers
             }
         }
 
-        private async Task Connect_Client(string payload)
+        private async Task PublishVitals(string payload)
         {
-            /*
-             * This sample creates a simple MQTT client and connects to a public broker.
-             *
-             * Always dispose the client when it is no longer used.
-             * The default version of MQTT is 3.1.1.
-             */
-
             var mqttFactory = new MqttFactory();
 
             using (var mqttClient = mqttFactory.CreateMqttClient())
             {
-                // Use builder classes where possible in this project.
                 var mqttClientOptions = new MqttClientOptionsBuilder()
                     .WithTcpServer("mqtt", 1883)
                     .WithClientId("gateway")
@@ -277,22 +265,8 @@ namespace gateway.Controllers
                     return Task.CompletedTask;
                 };
 
-                // mqttClient.ApplicationMessageReceivedAsync += e =>
-                // {
-                //     Console.WriteLine("Received application message.");
-                //     Console.WriteLine(e.ApplicationMessage);
-
-                //     return Task.CompletedTask;
-                // };
-
                 var response = await mqttClient.ConnectAsync(mqttClientOptions, CancellationToken.None);
                 Console.WriteLine(response.ResultCode);
-
-                // var mqttSubscribeOptions = mqttFactory.CreateSubscribeOptionsBuilder()
-                // .WithTopicFilter(f => { f.WithTopic("projekat/vitals"); })
-                // .Build();
-                // var subResponse = await mqttClient.SubscribeAsync(mqttSubscribeOptions, CancellationToken.None);
-                // Console.WriteLine("MQTT client subscribed to topic.");
 
                 var applicationMessage = new MqttApplicationMessageBuilder()
                     .WithTopic("projekat/vitals")
