@@ -14,7 +14,7 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0cnotify.proto\x12\x06notify\"Q\n\rNotifyRequest\x12\x11\n\teventName\x18\x01 \x01(\t\x12\x15\n\rparameterName\x18\x02 \x01(\t\x12\x16\n\x0eparameterValue\x18\x03 \x01(\x05\"\x1e\n\x0bNotifyReply\x12\x0f\n\x07message\x18\x01 \x01(\t2E\n\x06notify\x12;\n\x0bNotifyEvent\x12\x15.notify.NotifyRequest\x1a\x13.notify.NotifyReply\"\x00\x62\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0cnotify.proto\x12\x0cnotification\"Q\n\rNotifyRequest\x12\x11\n\teventName\x18\x01 \x01(\t\x12\x15\n\rparameterName\x18\x02 \x01(\t\x12\x16\n\x0eparameterValue\x18\x03 \x01(\x05\"\x1e\n\x0bNotifyReply\x12\x0f\n\x07message\x18\x01 \x01(\t2W\n\x0cNotification\x12G\n\x0bNotifyEvent\x12\x1b.notification.NotifyRequest\x1a\x19.notification.NotifyReply\"\x00\x62\x06proto3')
 
 
 
@@ -23,25 +23,25 @@ _NOTIFYREPLY = DESCRIPTOR.message_types_by_name['NotifyReply']
 NotifyRequest = _reflection.GeneratedProtocolMessageType('NotifyRequest', (_message.Message,), {
   'DESCRIPTOR' : _NOTIFYREQUEST,
   '__module__' : 'notify_pb2'
-  # @@protoc_insertion_point(class_scope:notify.NotifyRequest)
+  # @@protoc_insertion_point(class_scope:notification.NotifyRequest)
   })
 _sym_db.RegisterMessage(NotifyRequest)
 
 NotifyReply = _reflection.GeneratedProtocolMessageType('NotifyReply', (_message.Message,), {
   'DESCRIPTOR' : _NOTIFYREPLY,
   '__module__' : 'notify_pb2'
-  # @@protoc_insertion_point(class_scope:notify.NotifyReply)
+  # @@protoc_insertion_point(class_scope:notification.NotifyReply)
   })
 _sym_db.RegisterMessage(NotifyReply)
 
-_NOTIFY = DESCRIPTOR.services_by_name['notify']
+_NOTIFICATION = DESCRIPTOR.services_by_name['Notification']
 if _descriptor._USE_C_DESCRIPTORS == False:
 
   DESCRIPTOR._options = None
-  _NOTIFYREQUEST._serialized_start=24
-  _NOTIFYREQUEST._serialized_end=105
-  _NOTIFYREPLY._serialized_start=107
-  _NOTIFYREPLY._serialized_end=137
-  _NOTIFY._serialized_start=139
-  _NOTIFY._serialized_end=208
+  _NOTIFYREQUEST._serialized_start=30
+  _NOTIFYREQUEST._serialized_end=111
+  _NOTIFYREPLY._serialized_start=113
+  _NOTIFYREPLY._serialized_end=143
+  _NOTIFICATION._serialized_start=145
+  _NOTIFICATION._serialized_end=232
 # @@protoc_insertion_point(module_scope)

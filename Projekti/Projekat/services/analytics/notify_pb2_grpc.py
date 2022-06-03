@@ -5,7 +5,7 @@ import grpc
 import notify_pb2 as notify__pb2
 
 
-class notifyStub(object):
+class NotificationStub(object):
     """Missing associated documentation comment in .proto file."""
 
     def __init__(self, channel):
@@ -15,13 +15,13 @@ class notifyStub(object):
             channel: A grpc.Channel.
         """
         self.NotifyEvent = channel.unary_unary(
-                '/notify.notify/NotifyEvent',
+                '/notification.Notification/NotifyEvent',
                 request_serializer=notify__pb2.NotifyRequest.SerializeToString,
                 response_deserializer=notify__pb2.NotifyReply.FromString,
                 )
 
 
-class notifyServicer(object):
+class NotificationServicer(object):
     """Missing associated documentation comment in .proto file."""
 
     def NotifyEvent(self, request, context):
@@ -31,7 +31,7 @@ class notifyServicer(object):
         raise NotImplementedError('Method not implemented!')
 
 
-def add_notifyServicer_to_server(servicer, server):
+def add_NotificationServicer_to_server(servicer, server):
     rpc_method_handlers = {
             'NotifyEvent': grpc.unary_unary_rpc_method_handler(
                     servicer.NotifyEvent,
@@ -40,12 +40,12 @@ def add_notifyServicer_to_server(servicer, server):
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
-            'notify.notify', rpc_method_handlers)
+            'notification.Notification', rpc_method_handlers)
     server.add_generic_rpc_handlers((generic_handler,))
 
 
  # This class is part of an EXPERIMENTAL API.
-class notify(object):
+class Notification(object):
     """Missing associated documentation comment in .proto file."""
 
     @staticmethod
@@ -59,7 +59,7 @@ class notify(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/notify.notify/NotifyEvent',
+        return grpc.experimental.unary_unary(request, target, '/notification.Notification/NotifyEvent',
             notify__pb2.NotifyRequest.SerializeToString,
             notify__pb2.NotifyReply.FromString,
             options, channel_credentials,

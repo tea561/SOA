@@ -1,9 +1,9 @@
 syntax = "proto3";
 
-package notify;
+package notification;
 
 
-service notify {
+service Notification {
     rpc NotifyEvent (NotifyRequest) returns (NotifyReply) {}
 }
 
