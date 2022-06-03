@@ -4,29 +4,17 @@ from flask import Flask, jsonify
 import os
 import paho.mqtt.client as mqtt
 from pymongo import MongoClient
+from grpc_client import grpcClient
 
-MONGO_URI = 'mongodb://' + os.environ['MONGODB_USERNAME'] + ':' + os.environ['MONGODB_PASSWORD'] + '@' + os.environ['MONGODB_HOSTNAME'] + ':27017/' + os.environ['MONGODB_DATABASE']
-print(MONGO_URI)
-mongo_client = MongoClient(MONGO_URI, username = os.environ['MONGODB_USERNAME'], password=os.environ['MONGODB_PASSWORD'])
-mongo_db = mongo_client['analyticsdb']
-parameters = mongo_db.parameters
+client_grpc = grpcClient()
+os.environ['GRPC_TRACE'] = 'all' 
+os.environ['GRPC_VERBOSITY'] = 'DEBUG'
 
-
-# print("creating app", flush=True)
-# #app = Flask(__name__)
-
-
-# @app.route('/hello')
-# def home():
-#     return '<p>Hello World!</p>'
-
-# @app.route('/')
-# def home2():
-#     return '<p>Hello World!</p>'
-
-# @app.route('/getJSON')
-# def getJSON():
-#     return jsonify(hello='world')
+# MONGO_URI = 'mongodb://' + os.environ['MONGODB_USERNAME'] + ':' + os.environ['MONGODB_PASSWORD'] + '@' + os.environ['MONGODB_HOSTNAME'] + ':27017/' + os.environ['MONGODB_DATABASE']
+# print(MONGO_URI)
+# mongo_client = MongoClient(MONGO_URI, username = os.environ['MONGODB_USERNAME'], password=os.environ['MONGODB_PASSWORD'])
+# mongo_db = mongo_client['analyticsdb']
+# parameters = mongo_db.parameters
 
 
 # The callback for when the client receives a CONNACK response from the server.
@@ -46,9 +34,21 @@ def on_message(client, userdata, msg):
     print(msg.topic+" "+str(msg.payload), flush = True)
     decoded_message = str(msg.payload.decode("utf-8"))
     jsonMsg = json.loads(decoded_message)
+    parameters = jsonMsg[0]
     print(jsonMsg, flush=True)
-    result = parameters.insert_one(jsonMsg[0])
-    print(str(result), flush=True)
+
+    if(msg.topic == 'analysis/high-pulse'):
+        client_grpc.get_url('High pulse', 'pulse', parameters["pulse"])
+    elif(msg.topic == 'analysis/high-pressure'):
+        client_grpc.get_url('High pressure', 'sys', parameters["sys"])
+    elif(msg.topic == 'analysis/low-pressure'):
+        client_grpc.get_url('Low pressure', 'sys', parameters["sys"])
+    else:
+        client_grpc.get_url('Low pulse', 'pulse', parameters["pulse"])
+
+        
+    # result = parameters.insert_one(jsonMsg[0])
+    # print(str(result), flush=True)
 
 
 
@@ -68,9 +68,7 @@ def on_disconnect(client, userdata, rc):
 if __name__ == "__main__":
     print("main", flush=True)
     #port = int(os.environ.get('PORT', 5005))
-    #app.run(debug=True, host='0.0.0.0', port=port) 
-
-
+    #app.run(debug=True, host='0.0.0.0', port=port)
 
     client = mqtt.Client()
     client.on_connect = on_connect

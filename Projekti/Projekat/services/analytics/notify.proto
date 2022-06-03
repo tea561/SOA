@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+package notify;
+
+
+service notify {
+    rpc NotifyEvent (NotifyRequest) returns (NotifyReply) {}
+}
+
+
+message NotifyRequest {
+  string eventName = 1;
+  string parameterName = 2;
+  int32 parameterValue = 3;
+}
+
+// The response message containing the greetings.
+message NotifyReply {
+  string message = 1;
+}
