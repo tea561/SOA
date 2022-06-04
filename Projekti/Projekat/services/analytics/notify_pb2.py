@@ -14,11 +14,12 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0cnotify.proto\x12\x0cnotification\"Q\n\rNotifyRequest\x12\x11\n\teventName\x18\x01 \x01(\t\x12\x15\n\rparameterName\x18\x02 \x01(\t\x12\x16\n\x0eparameterValue\x18\x03 \x01(\x05\"\x1e\n\x0bNotifyReply\x12\x0f\n\x07message\x18\x01 \x01(\t2W\n\x0cNotification\x12G\n\x0bNotifyEvent\x12\x1b.notification.NotifyRequest\x1a\x19.notification.NotifyReply\"\x00\x62\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0cnotify.proto\x12\x0cnotification\"L\n\rNotifyRequest\x12\x11\n\teventName\x18\x01 \x01(\t\x12(\n\x06params\x18\x02 \x01(\x0b\x32\x18.notification.Parameters\"Y\n\nParameters\x12\x0b\n\x03sys\x18\x01 \x01(\x05\x12\x0c\n\x04\x64ias\x18\x02 \x01(\x05\x12\r\n\x05pulse\x18\x03 \x01(\x05\x12\x0e\n\x06userID\x18\x04 \x01(\x05\x12\x11\n\ttimestamp\x18\x05 \x01(\t\"\x1e\n\x0bNotifyReply\x12\x0f\n\x07message\x18\x01 \x01(\t2U\n\x0cNotification\x12\x45\n\x0bNotifyEvent\x12\x1b.notification.NotifyRequest\x1a\x19.notification.NotifyReplyb\x06proto3')
 
 
 
 _NOTIFYREQUEST = DESCRIPTOR.message_types_by_name['NotifyRequest']
+_PARAMETERS = DESCRIPTOR.message_types_by_name['Parameters']
 _NOTIFYREPLY = DESCRIPTOR.message_types_by_name['NotifyReply']
 NotifyRequest = _reflection.GeneratedProtocolMessageType('NotifyRequest', (_message.Message,), {
   'DESCRIPTOR' : _NOTIFYREQUEST,
@@ -26,6 +27,13 @@ NotifyRequest = _reflection.GeneratedProtocolMessageType('NotifyRequest', (_mess
   # @@protoc_insertion_point(class_scope:notification.NotifyRequest)
   })
 _sym_db.RegisterMessage(NotifyRequest)
+
+Parameters = _reflection.GeneratedProtocolMessageType('Parameters', (_message.Message,), {
+  'DESCRIPTOR' : _PARAMETERS,
+  '__module__' : 'notify_pb2'
+  # @@protoc_insertion_point(class_scope:notification.Parameters)
+  })
+_sym_db.RegisterMessage(Parameters)
 
 NotifyReply = _reflection.GeneratedProtocolMessageType('NotifyReply', (_message.Message,), {
   'DESCRIPTOR' : _NOTIFYREPLY,
@@ -39,9 +47,11 @@ if _descriptor._USE_C_DESCRIPTORS == False:
 
   DESCRIPTOR._options = None
   _NOTIFYREQUEST._serialized_start=30
-  _NOTIFYREQUEST._serialized_end=111
-  _NOTIFYREPLY._serialized_start=113
-  _NOTIFYREPLY._serialized_end=143
-  _NOTIFICATION._serialized_start=145
-  _NOTIFICATION._serialized_end=232
+  _NOTIFYREQUEST._serialized_end=106
+  _PARAMETERS._serialized_start=108
+  _PARAMETERS._serialized_end=197
+  _NOTIFYREPLY._serialized_start=199
+  _NOTIFYREPLY._serialized_end=229
+  _NOTIFICATION._serialized_start=231
+  _NOTIFICATION._serialized_end=316
 # @@protoc_insertion_point(module_scope)

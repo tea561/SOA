@@ -10,11 +10,11 @@ client_grpc = grpcClient()
 os.environ['GRPC_TRACE'] = 'all' 
 os.environ['GRPC_VERBOSITY'] = 'DEBUG'
 
-# MONGO_URI = 'mongodb://' + os.environ['MONGODB_USERNAME'] + ':' + os.environ['MONGODB_PASSWORD'] + '@' + os.environ['MONGODB_HOSTNAME'] + ':27017/' + os.environ['MONGODB_DATABASE']
-# print(MONGO_URI)
-# mongo_client = MongoClient(MONGO_URI, username = os.environ['MONGODB_USERNAME'], password=os.environ['MONGODB_PASSWORD'])
-# mongo_db = mongo_client['analyticsdb']
-# parameters = mongo_db.parameters
+MONGO_URI = 'mongodb://' + os.environ['MONGODB_USERNAME'] + ':' + os.environ['MONGODB_PASSWORD'] + '@' + os.environ['MONGODB_HOSTNAME'] + ':27017/' + os.environ['MONGODB_DATABASE'] + '?authSource=admin'
+print(MONGO_URI)
+mongo_client = MongoClient(MONGO_URI, username = os.environ['MONGODB_USERNAME'], password=os.environ['MONGODB_PASSWORD'])
+mongo_db = mongo_client['analyticsdb']
+parameters = mongo_db.parameters
 
 
 # The callback for when the client receives a CONNACK response from the server.
@@ -34,21 +34,32 @@ def on_message(client, userdata, msg):
     print(msg.topic+" "+str(msg.payload), flush = True)
     decoded_message = str(msg.payload.decode("utf-8"))
     jsonMsg = json.loads(decoded_message)
-    parameters = jsonMsg[0]
+    param = jsonMsg[0]
     print(jsonMsg, flush=True)
 
-    if(msg.topic == 'analysis/high-pulse'):
-        client_grpc.get_url('High pulse', 'pulse', parameters["pulse"])
-    elif(msg.topic == 'analysis/high-pressure'):
-        client_grpc.get_url('High pressure', 'sys', parameters["sys"])
-    elif(msg.topic == 'analysis/low-pressure'):
-        client_grpc.get_url('Low pressure', 'sys', parameters["sys"])
-    else:
-        client_grpc.get_url('Low pulse', 'pulse', parameters["pulse"])
+    entry = {
+        'event': '',
+        'sys': param['sys'],
+        'dias': param['dias'],
+        'pulse': param['pulse'],
+        'userID': param['userID']
+    }
 
-        
-    # result = parameters.insert_one(jsonMsg[0])
-    # print(str(result), flush=True)
+    if(msg.topic == 'analysis/high-pulse'):
+        entry['event'] = 'High pulse'
+        client_grpc.get_url('High pulse', param)
+    elif(msg.topic == 'analysis/high-pressure'):
+        entry['event'] = 'High pressure'
+        client_grpc.get_url('High pressure', param)
+    elif(msg.topic == 'analysis/low-pressure'):
+        entry['event'] = 'Low pressure'
+        client_grpc.get_url('Low pressure', param)
+    else:
+        entry['event'] = 'Low pulse'
+        client_grpc.get_url('Low pulse', param)
+
+    result = parameters.insert_one(entry)
+    print(str(result), flush=True)
 
 
 

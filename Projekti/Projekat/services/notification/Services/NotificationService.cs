@@ -14,7 +14,7 @@ public class NotificationService : Notification.NotificationBase
     public override Task<NotifyReply> NotifyEvent(NotifyRequest request, ServerCallContext context)
     {
         _logger.LogDebug(request.ToString());
-        Console.WriteLine("Event: " + request.EventName + " occured with parameter " + request.ParameterName + " = " + request.ParameterValue);
+        Console.WriteLine("Event: " + request.EventName + " occured with parameters: \n" + request.Params.ToString());
         return Task.FromResult(new NotifyReply
         {
             Message = "Event " + request.EventName + " received."

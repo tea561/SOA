@@ -4,20 +4,24 @@ option csharp_namespace = "notification";
 
 package notification;
 
-// The greeting service definition.
 service Notification {
   // Sends a greeting
   rpc NotifyEvent (NotifyRequest) returns (NotifyReply);
 }
 
-// The request message containing the user's name.
 message NotifyRequest {
   string eventName = 1;
-  string parameterName = 2;
-  int32 parameterValue = 3;
+  Parameters params = 2;
 }
 
-// The response message containing the greetings.
+message Parameters {
+  int32 sys = 1;
+  int32 dias = 2;
+  int32 pulse = 3;
+  int32 userID = 4;
+  string timestamp = 5;
+}
+
 message NotifyReply {
   string message = 1;
 }

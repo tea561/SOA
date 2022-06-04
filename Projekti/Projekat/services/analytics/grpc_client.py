@@ -15,8 +15,8 @@ class grpcClient(object):
         self.stub = pb2_grpc.NotificationStub(self.channel)
         print(self.stub)
 
-    def get_url(self, eventName, parameterName, parameterValue):
-        message = pb2.NotifyRequest(eventName = eventName, parameterName = parameterName, parameterValue = parameterValue)
+    def get_url(self, eventName, params):
+        message = pb2.NotifyRequest(eventName = eventName, params = params)
         print(f'{message}', flush=True)
         return self.stub.NotifyEvent(message)
 
