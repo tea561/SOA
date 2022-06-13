@@ -1,41 +1,30 @@
 
 import requests
 import json
-import random
 import time
+import csv
 
 
-edgexip = 'localhost'
-humval = 40
-tempval = 23
+edgexip = 'http://localhost:49986/api/v1/resource/Environment_sensor_cluster_01/'
+sensors = ['co', 'humidity', 'lpg', 'smoke', 'temp']
 
-def generateSensorData(humval, tempval):
+def readCSVfile():
+    with open('iot_telemetry_data.csv', mode='r') as csv_file:
+        csv_reader = csv.DictReader(csv_file)
+        line_count = 0
+        for row in csv_reader:
+            if line_count != 0:
+                print(row)
+                for sensor in sensors:
+                    url = edgexip + sensor
+                    payload = row[sensor]
+                    headers = {'content-type': 'application/json'}
+                    requests.post(url, data=json.dumps(payload), headers=headers, verify=False)
 
-    humval = random.randint(humval-5,humval+5)
-    tempval = random.randint(tempval-1, tempval+1)
-
-    print("Sending values: Humidity %s, Temperature %sC" % (humval, tempval))
-
-    return (humval, tempval)
-
+            line_count += 1
+            time.sleep(5)
 
 
 if __name__ == "__main__":
+    readCSVfile()
 
-    sensorTypes = ["temperature", "humidity"]
-
-    while(1):
-
-        (humval, tempval) = generateSensorData(humval, tempval)
-
-        url = 'http://%s:49986/api/v1/resource/Temp_and_Humidity_sensor_cluster_01/temperature' % edgexip
-        payload = tempval
-        headers = {'content-type': 'application/json'}
-        response = requests.post(url, data=json.dumps(payload), headers=headers, verify=False)
-
-        url = 'http://%s:49986/api/v1/resource/Temp_and_Humidity_sensor_cluster_01/humidity' % edgexip
-        payload = humval
-        headers = {'content-type': 'application/json'}
-        response = requests.post(url, data=json.dumps(payload), headers=headers, verify=False)
-
-        time.sleep(5)
