@@ -35,8 +35,8 @@ x-common-env-variables: &common-variables
   Clients_Command_Host: edgex-core-command
   Clients_Scheduler_Host: edgex-support-scheduler
   Clients_RulesEngine_Host: edgex-kuiper
-  Clients_VirtualDevice_Host: edgex-device-virtual
   Databases_Primary_Host: edgex-redis
+
   # Required in case old configuration from previous release used.
   # Change to "true" if re-enabling logging service for remote logging
   Logging_EnableRemote: "false"
@@ -47,13 +47,49 @@ volumes:
   log-data:
   consul-config:
   consul-data:
+  influxdata:
 
 services:
+  influx:
+    image: influxdb:1.8
+    environment:
+      - INFLUXDB_ADMIN_ENABLED=true
+    volumes:
+      - influxdata:/var/lib/influx.db
+    ports:
+      - "8086:8086"
+  grafana:
+    ports:
+      - 4200:3000
+    image: grafana/grafana:3.1.1
+    depends_on:
+      - influx
+    links:
+      - influx
+    volumes:
+      - influxdata:/var/lib/influx.db
+  mqtt-edgex:
+    container_name: mqtt-edgex
+    hostname: mqtt-edgex
+    image: eclipse-mosquitto:2.0.14
+    restart: always
+    networks:
+      - edgex-network
+    volumes:
+      - ./mosquitto/config:/mosquitto/config
+      - ./mosquitto/data:/mosquitto/data
+      - ./mosquitto/log:/mosquitto/log
+    expose:
+      - 1883
+      - 9001
+    ports:
+      - 1883:1883
+      - 9001:9001
   consul:
     image: edgexfoundry/docker-edgex-consul:1.2.0
     ports:
-      - "127.0.0.1:8400:8400"
-      - "127.0.0.1:8500:8500"
+      - "0.0.0.0:8400:8400"
+      - "0.0.0.0:8500:8500"
     container_name: edgex-core-consul
     hostname: edgex-core-consul
     networks:
@@ -68,7 +104,7 @@ services:
   redis:
     image: redis:5.0.8-alpine
     ports:
-      - "127.0.0.1:6379:6379"
+      - "0.0.0.0:6379:6379"
     container_name: edgex-redis
     hostname: edgex-redis
     networks:
@@ -86,7 +122,7 @@ services:
 #  logging:
 #    image: edgexfoundry/docker-support-logging-go:1.2.1
 #    ports:
-#      - "127.0.0.1:48061:48061"
+#      - "0.0.0.0:48061:48061"
 #    container_name: edgex-support-logging
 #    hostname: edgex-support-logging
 #    networks:
@@ -103,7 +139,7 @@ services:
   system:
     image: edgexfoundry/docker-sys-mgmt-agent-go:1.2.1
     ports:
-      - "127.0.0.1:48090:48090"
+      - "0.0.0.0:48090:48090"
     container_name: edgex-sys-mgmt-agent
     hostname: edgex-sys-mgmt-agent
     networks:
@@ -127,7 +163,7 @@ services:
   notifications:
     image: edgexfoundry/docker-support-notifications-go:1.2.1
     ports:
-      - "127.0.0.1:48060:48060"
+      - "0.0.0.0:48060:48060"
     container_name: edgex-support-notifications
     hostname: edgex-support-notifications
     networks:
@@ -143,7 +179,7 @@ services:
   metadata:
     image: edgexfoundry/docker-core-metadata-go:1.2.1
     ports:
-      - "127.0.0.1:48081:48081"
+      - "0.0.0.0:48081:48081"
     container_name: edgex-core-metadata
     hostname: edgex-core-metadata
     networks:
@@ -162,8 +198,8 @@ services:
   data:
     image: edgexfoundry/docker-core-data-go:1.2.1
     ports:
-      - "127.0.0.1:48080:48080"
-      - "127.0.0.1:5563:5563"
+      - "0.0.0.0:48080:48080"
+      - "0.0.0.0:5563:5563"
     container_name: edgex-core-data
     hostname: edgex-core-data
     networks:
@@ -180,7 +216,7 @@ services:
   command:
     image: edgexfoundry/docker-core-command-go:1.2.1
     ports:
-      - "127.0.0.1:48082:48082"
+      - "0.0.0.0:48082:48082"
     container_name: edgex-core-command
     hostname: edgex-core-command
     networks:
@@ -197,7 +233,7 @@ services:
   scheduler:
     image: edgexfoundry/docker-support-scheduler-go:1.2.1
     ports:
-      - "127.0.0.1:48085:48085"
+      - "0.0.0.0:48085:48085"
     container_name: edgex-support-scheduler
     hostname: edgex-support-scheduler
     networks:
@@ -215,7 +251,7 @@ services:
   app-service-rules:
     image: edgexfoundry/docker-app-service-configurable:1.2.0
     ports:
-      - "127.0.0.1:48100:48100"
+      - "0.0.0.0:48100:48100"
     container_name: edgex-app-service-configurable-rules
     hostname: edgex-app-service-configurable-rules
     networks:
@@ -232,11 +268,51 @@ services:
 #      - logging  # uncomment if re-enabled remote logging
       - data
 
+
+  app-service-mqtt:
+      image: edgexfoundry/docker-app-service-configurable:1.1.0
+      ports:
+        - "0.0.0.0:48101:48101"
+      container_name: edgex-app-service-configurable-mqtt
+      hostname: edgex-app-service-configurable-mqtt
+      networks:
+        edgex-network:
+          aliases:
+            - edgex-app-service-configurable-mqtt
+      environment:
+        <<: *common-variables
+        edgex_profile: mqtt-export
+        Service_Host: edgex-app-service-configurable-mqtt
+        Service_Port: 48101
+        MessageBus_SubscribeHost_Host: edgex-core-data
+        Binding_PublishTopic: events
+        # Added for MQTT export using app service
+        WRITABLE_PIPELINE_FUNCTIONS_MQTTSEND_ADDRESSABLE_ADDRESS: mqtt-edgex
+        WRITABLE_PIPELINE_FUNCTIONS_MQTTSEND_ADDRESSABLE_PORT: 1883
+        WRITABLE_PIPELINE_FUNCTIONS_MQTTSEND_ADDRESSABLE_PROTOCOL: tcp
+        WRITABLE_PIPELINE_FUNCTIONS_MQTTSEND_ADDRESSABLE_TOPIC: "environment-data"
+        WRITABLE_PIPELINE_FUNCTIONS_MQTTSEND_PARAMETERS_AUTORECONNECT: "true"
+        WRITABLE_PIPELINE_FUNCTIONS_MQTTSEND_PARAMETERS_RETAIN: "true"
+        WRITABLE_PIPELINE_FUNCTIONS_MQTTSEND_PARAMETERS_PERSISTONERROR: "false"
+        # WRITABLE_PIPELINE_FUNCTIONS_MQTTSEND_ADDRESSABLE_PUBLISHER: 
+        # WRITABLE_PIPELINE_FUNCTIONS_MQTTSEND_ADDRESSABLE_USER: 
+        # WRITABLE_PIPELINE_FUNCTIONS_MQTTSEND_ADDRESSABLE_PASSWORD:
+        # WRITABLE_PIPELINE_FUNCTIONS_MQTTSEND_PARAMETERS_QOS: ["your quality or service"]
+        # WRITABLE_PIPELINE_FUNCTIONS_MQTTSEND_PARAMETERS_KEY: [your Key]  
+        # WRITABLE_PIPELINE_FUNCTIONS_MQTTSEND_PARAMETERS_CERT: [your Certificate]
+
+      depends_on:
+        - consul
+  #      - logging  # uncomment if re-enabled remote logging
+        - data
+
+
+
   rulesengine:
     image: emqx/kuiper:0.4.2-alpine
     ports:
-      - "127.0.0.1:48075:48075"
-      - "127.0.0.1:20498:20498"
+      - "0.0.0.0:48075:48075"
+      - "0.0.0.0:20498:20498"
     container_name: edgex-kuiper
     hostname: edgex-kuiper
     networks:
@@ -259,7 +335,7 @@ services:
   # rulesengine:
   #   image: edgexfoundry/docker-support-rulesengine:1.2.1
   #   ports:
-  #     - "127.0.0.1:48075:48075"
+  #     - "0.0.0.0:48075:48075"
   #   container_name: edgex-support-rulesengine
   #   hostname: edgex-support-rulesengine
   #   networks:
@@ -271,27 +347,10 @@ services:
 # Device Services
 #################################################################
 
-  device-virtual:
-    image: edgexfoundry/docker-device-virtual-go:1.2.2
-    ports:
-    - "127.0.0.1:49990:49990"
-    container_name: edgex-device-virtual
-    hostname: edgex-device-virtual
-    networks:
-      - edgex-network
-    environment:
-      <<: *common-variables
-      Service_Host: edgex-device-virtual
-    depends_on:
-      - consul
-#      - logging  # uncomment if re-enabled remote logging
-      - data
-      - metadata
-
   device-rest:
     image: edgexfoundry/docker-device-rest-go:1.1.1
     ports:
-      - "127.0.0.1:49986:49986"
+      - "0.0.0.0:49986:49986"
     container_name: edgex-device-rest
     hostname: edgex-device-rest
     networks:
@@ -307,7 +366,7 @@ services:
 #  device-random:
 #    image: edgexfoundry/docker-device-random-go:1.2.1
 #    ports:
-#      - "127.0.0.1:49988:49988"
+#      - "0.0.0.0:49988:49988"
 #    container_name: edgex-device-random
 #    hostname: edgex-device-random
 #    networks:
@@ -322,7 +381,7 @@ services:
 #  device-mqtt:
 #    image: edgexfoundry/docker-device-mqtt-go:1.2.1
 #    ports:
-#      - "127.0.0.1:49982:49982"
+#      - "0.0.0.0:49982:49982"
 #    container_name: edgex-device-mqtt
 #    hostname: edgex-device-mqtt
 #    networks:
@@ -337,7 +396,7 @@ services:
 #  device-modbus:
 #    image: edgexfoundry/docker-device-modbus-go:1.2.1
 #    ports:
-#      - "127.0.0.1:49991:49991"
+#      - "0.0.0.0:49991:49991"
 #    container_name: edgex-device-modbus
 #    hostname: edgex-device-modbus
 #    networks:
@@ -352,7 +411,7 @@ services:
 #  device-snmp:
 #    image: edgexfoundry/docker-device-snmp-go:1.2.1
 #    ports:
-#      - "127.0.0.1:49993:49993"
+#      - "0.0.0.0:49993:49993"
 #    container_name: edgex-device-snmp
 #    hostname: edgex-device-snmp
 #    networks:
