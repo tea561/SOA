@@ -125,6 +125,17 @@ services:
     ports:
       - 5000:5000
 
+  visualizaton:
+    build:
+      context: .\visualization
+    container_name: visualization
+    hostname: visualization
+    image: visualization
+    networks:
+      - edgex-network
+    ports:
+      - 7000:80
+
 # The logging service has been deprecated in Geneva release and will be removed in the Hanoi release.
 # All services are configure to send logging to STDOUT, i.e. not remote which requires this logging service
 # If you still must use remote logging, un-comment the block below, all the related depends that have been commented out
