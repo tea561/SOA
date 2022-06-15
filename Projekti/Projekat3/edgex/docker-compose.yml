@@ -50,6 +50,17 @@ volumes:
   influxdata:
 
 services:
+  monitoring:
+    container_name: monitoring
+    build:
+      context: ./monitoring
+    image: monitoring
+    networks:
+      edgex-network:
+        aliases:
+          - monitoring
+    ports:
+      - "5007:80"
   influx:
     image: influxdb:1.8
     environment:
