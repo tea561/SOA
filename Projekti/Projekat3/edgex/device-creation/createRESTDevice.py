@@ -39,7 +39,7 @@ def createAddressables():
     url = 'http://%s:48081/api/v1/addressable' % edgex_ip
 
     payload = {
-        "name":"TestApp",
+        "name":"probaAddressable",
         "protocol":"HTTP",
         "address":device_ip,
         "port":5000,
@@ -55,7 +55,7 @@ def createValueDescriptors():
     url = 'http://%s:48080/api/v1/valuedescriptor' % edgex_ip
 
     payload =   {
-                    "name":"color",
+                    "name":"probaValueDesc",
                     "description":"Color to be shown in test app web UI",
                     "type":"Str",
                     "uomLabel":"color",
@@ -92,13 +92,13 @@ def createDeviceService():
     url = 'http://%s:48081/api/v1/deviceservice' % edgex_ip
 
     payload = {
-        "name":"device-service",
+        "name":"proba-service",
         "description":"Gateway for emergency venting system",
         "labels":["color","testapp"],
         "adminState":"unlocked",
         "operatingState":"enabled",
         "addressable": {
-            "name":"TestApp"
+            "name":"probaAddressable"
         }
     }
     headers = {'content-type': 'application/json'}
@@ -115,7 +115,7 @@ def addNewDevice():
     url = 'http://%s:48081/api/v1/device' % edgex_ip
 
     payload = {
-        "name": "TestApp",
+        "name": "probaDevice",
         "description": "Test application",
         "adminState": "unlocked",
         "operatingState": "enabled",
@@ -127,7 +127,7 @@ def addNewDevice():
             }
         },
         "addressable": {
-            "name": "TestApp"
+            "name": "probaAddressable"
         },
         "labels": [
             "color",
@@ -135,10 +135,10 @@ def addNewDevice():
         ],
         "location": "Nis",
         "service": {
-            "name": "device-service" 
+            "name": "proba-service" 
         },
         "profile": {
-            "name": "colorChanger"
+            "name": "probaProfile"
         }
     }
     headers = {'content-type': 'application/json'}

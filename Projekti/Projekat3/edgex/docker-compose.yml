@@ -117,6 +117,8 @@ services:
   test-app:
     build:
       context: .\test-app
+    container_name: test-app
+    hostname: test-app
     image: test-app
     networks:
       - edgex-network
