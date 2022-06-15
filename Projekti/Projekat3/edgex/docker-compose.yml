@@ -118,6 +118,8 @@ services:
     build:
       context: .\test-app
     image: test-app
+    networks:
+      - edgex-network
     ports:
       - 5000:5000
 
