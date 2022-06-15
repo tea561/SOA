@@ -113,6 +113,13 @@ services:
       <<: *common-variables
     volumes:
       - db-data:/data:z
+      
+  test-app:
+    build:
+      context: .\test-app
+    image: test-app
+    ports:
+      - 5000:5000
 
 # The logging service has been deprecated in Geneva release and will be removed in the Hanoi release.
 # All services are configure to send logging to STDOUT, i.e. not remote which requires this logging service
