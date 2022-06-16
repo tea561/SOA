@@ -5,23 +5,30 @@ using MQTTnet.Client;
 namespace monitoring.Services {
     public class MonitoringService {
 
-        public double Temp { get; set; }
-        public double Humidity { get; set; }
+        //public double Temp { get; set; }
+        //public double Humidity { get; set; }
 
-        public double Lpg { get; set; }
+        //public double Lpg { get; set; }
 
-        public double Co { get; set; }
+        //public double Co { get; set; }
 
-        public double Smoke { get; set; }
+        //public double Smoke { get; set; }
+
+        public static async Task<MonitoringService> Create()
+        {
+            var monitoringService = new MonitoringService();
+            await monitoringService.SubscribeOnTopic();
+            return monitoringService;
+        }
 
 
         public MonitoringService()
         {
-            Temp = 0.0;
-            Humidity = 0.0;
-            Lpg = 0.0;
-            Co = 0.0;
-            Smoke = 0.0;
+            //Temp = 0.0;
+            //Humidity = 0.0;
+            //Lpg = 0.0;
+            //Co = 0.0;
+            //Smoke = 0.0;
 
             SubscribeOnTopic();
         }
@@ -71,6 +78,7 @@ namespace monitoring.Services {
                     .WithTopicFilter(f => {f.WithTopic("environment-data"); })
                     .Build();
 
+                
                 await mqttClient.SubscribeAsync(mqttSubscribeOptions, CancellationToken.None);
                 Console.WriteLine("MQTT client subscribed to topic.");
                 
