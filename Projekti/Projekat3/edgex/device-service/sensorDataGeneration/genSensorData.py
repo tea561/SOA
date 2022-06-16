@@ -18,9 +18,10 @@ def readCSVfile():
                 print(row)
                 for sensor in sensors:
                     url = edgexip + sensor
-                    payload = float(row[sensor])
+                    payload = row[sensor]
+                    print(payload)
                     headers = {'content-type': 'application/json'}
-                    result = requests.post(url, data=json.dumps(payload),
+                    result = requests.post(url, data=payload,
                                            headers=headers, verify=False)
                     print(result)
 

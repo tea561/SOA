@@ -1,6 +1,9 @@
 from influxdb import InfluxDBClient
 import paho.mqtt.client as mqtt
 import json
+import struct
+import base64
+# import numpy
 
 
 def on_connect(client, userdata, flags, rc):
@@ -20,14 +23,31 @@ def on_disconnect(client, userdata, rc):
 
 def on_message(client, userdata, msg):
     print(msg.topic+" "+str(msg.payload), flush=True)
-    decoded_message = str(msg.payload.decode("utf-8"))
+    decoded_message = str(msg.payload.decode('utf-8'))
     jsonMsg = json.loads(decoded_message)
-    param = jsonMsg[0]
-    print(jsonMsg, flush=True)
+    #param = jsonMsg[0]
+    value = jsonMsg['readings'][0]['value']
+    name = jsonMsg['readings'][0]['name']
+    device = jsonMsg['readings'][0]['device']
+    # print(decoded_message)
+    valueDecoded = base64.b64decode(value)
+
+    # posto je network layer encoding je u big endian formatu, a ne litle endian
+    [x] = struct.unpack('>d', valueDecoded)
+    # numpy.float64(valueDecoded)
+    print('\n\nValue: ' + str(x) + '\n\n')
 
     entry = {
-
+        "measurement": name,
+        "tags": {
+            "device": device
+        },
+        "fields": {
+            "value": x
+        }
     }
+    result = influxclient.write_points([entry])
+    print(result)
 
 
 if __name__ == "__main__":
@@ -43,8 +63,10 @@ if __name__ == "__main__":
     print("Trying to connect", flush=True)
     client.connect("mqtt-edgex", 1883, 60)
 
-    # influxclient = InfluxDBClient(host='edgex_influx_1', port=8086)
-    # influxclient.create_database('db-environment-data')
-    # influxclient.switch_database('db-environment-data')
+    influxclient = InfluxDBClient(
+        host='influx', port=8086, username='admin', password='admin')
+    if {'name': 'db-environment-data'} not in influxclient.get_list_database():
+        influxclient.create_database('db-environment-data')
+    influxclient.switch_database('db-environment-data')
 
     client.loop_forever()

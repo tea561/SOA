@@ -61,15 +61,23 @@ services:
           - monitoring
     ports:
       - "5007:80"
+    depends_on:
+      - mqtt-edgex
   influx:
     image: influxdb:1.8
+    container_name: influx
+    hostname: influx
     environment:
       - INFLUXDB_ADMIN_ENABLED=true
     volumes:
       - influxdata:/var/lib/influx.db
+    networks:
+      - edgex-network
     ports:
       - "8086:8086"
   grafana:
+    container_name: grafana
+    hostname: grafana
     ports:
       - 4200:3000
     image: grafana/grafana:3.1.1
@@ -77,6 +85,8 @@ services:
       - influx
     links:
       - influx
+    networks:
+      - edgex-network
     volumes:
       - influxdata:/var/lib/influx.db
   mqtt-edgex:
@@ -142,10 +152,20 @@ services:
     container_name: visualization
     hostname: visualization
     image: visualization
+    environment:
+      NODEID: "node-visualization"
+      SERVICES: visualization
+      ADMIN_USER: admin
+      ADMIN_PASSWORD: admin
+      INFLUXDB_DATABASE: db-environment-data
+      INFLUXDB_HOST: influx
     networks:
       - edgex-network
     ports:
       - 7000:80
+    depends_on:
+      - influx
+      - mqtt-edgex
 
 # The logging service has been deprecated in Geneva release and will be removed in the Hanoi release.
 # All services are configure to send logging to STDOUT, i.e. not remote which requires this logging service
