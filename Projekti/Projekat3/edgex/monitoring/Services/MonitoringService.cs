@@ -1,3 +1,4 @@
+using System.Text;
 using System.Text.Json;
 using MQTTnet;
 using MQTTnet.Client;
@@ -5,35 +6,28 @@ using MQTTnet.Client;
 namespace monitoring.Services {
     public class MonitoringService {
 
-        //public double Temp { get; set; }
-        //public double Humidity { get; set; }
+        public IDictionary<string, double> dict;
 
-        //public double Lpg { get; set; }
-
-        //public double Co { get; set; }
-
-        //public double Smoke { get; set; }
-
-        public static async Task<MonitoringService> Create()
-        {
-            var monitoringService = new MonitoringService();
-            await monitoringService.SubscribeOnTopic();
-            return monitoringService;
-        }
+        //public static async Task<MonitoringService> Create()
+        //{
+        //    var monitoringService = new MonitoringService();
+        //    await monitoringService.SubscribeOnTopic();
+        //    return monitoringService;
+        //}
 
 
         public MonitoringService()
         {
-            //Temp = 0.0;
-            //Humidity = 0.0;
-            //Lpg = 0.0;
-            //Co = 0.0;
-            //Smoke = 0.0;
-
-            SubscribeOnTopic();
+            dict = new Dictionary<string, double>();
+            dict.Add("temp", 0.0);
+            dict.Add("humidity", 0.0);
+            dict.Add("smoke", 0.0);
+            dict.Add("co", 0.0);
+            dict.Add("lpg", 0.0);
+            //SubscribeOnTopic();
         }
 
-        private async Task SubscribeOnTopic()
+        public async void SubscribeOnTopic()
         {
             var mqttFactory = new MqttFactory();
 
@@ -47,7 +41,9 @@ namespace monitoring.Services {
                 
                 mqttClient.ApplicationMessageReceivedAsync += e =>
                 {
-                    Console.WriteLine("Received application message. " + e.ToString());
+                    //Console.WriteLine("Received application message. " + e.ToString());
+                    Console.WriteLine(Encoding.UTF8.GetString(e.ApplicationMessage.Payload));
+                    Console.WriteLine(e.ApplicationMessage.Topic);
                     //var result = DumpToConsole(e);
                     return Task.CompletedTask;
                 };

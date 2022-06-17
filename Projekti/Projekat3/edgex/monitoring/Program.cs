@@ -1,11 +1,15 @@
+using System.Text;
 using monitoring.Services;
+using MQTTnet;
+using MQTTnet.Client;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
 builder.Services.AddSingleton<MonitoringService, MonitoringService>();
-builder.Services.AddMemoryCache();
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -21,7 +25,100 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+var mqttFactory = new MqttFactory();
+
+var mqttClientOptions = new MqttClientOptionsBuilder()
+                    .WithTcpServer("mqtt-edgex", 1883)
+                    .WithClientId("monitoring")
+                    .Build();
+
+var mqttSubscribeOptions = mqttFactory.CreateSubscribeOptionsBuilder()
+                    .WithTopicFilter(f => { f.WithTopic("environment-data"); })
+                    .Build();
+
+var client = mqttFactory.CreateMqttClient();
+client.ApplicationMessageReceivedAsync += async (e) =>
+{
+    var monitoringService = app.Services.GetRequiredService<MonitoringService>();
+   
+    Console.WriteLine("### RECEIVED APPLICATION MESSAGE ###");
+    Console.WriteLine($"+ Topic = {e.ApplicationMessage.Topic}");
+    Console.WriteLine($"+ Payload = {Encoding.UTF8.GetString(e.ApplicationMessage.Payload)}");
+
+    var payload = Encoding.UTF8.GetString(e.ApplicationMessage.Payload);
+    var data = JsonConvert.DeserializeObject(payload);
+    Console.WriteLine(data);
+
+    dynamic obj = JObject.Parse(payload);
+    var receivedValue = obj.readings[0].value;
+    var paramName = obj.readings[0].name;
+    Console.WriteLine(receivedValue.GetType());
+    
+
+    byte[] bytes = Convert.FromBase64String(receivedValue.ToString());
+    Array.Reverse(bytes, 0, 8);
+    var convertedValue = BitConverter.ToDouble(bytes, 0);
+    Console.WriteLine("Converted val: " + convertedValue);
+
+    if(convertedValue > monitoringService.dict[paramName.ToString()])
+    {
+        Console.WriteLine("RED");
+        using(var httpClient = new HttpClient())
+        {
+            var jsonObj = new {
+                color = "red"
+            };
+            var c = JsonConvert.SerializeObject(jsonObj);
+            Console.WriteLine(c);
+            StringContent content = new StringContent(c, Encoding.UTF8, "application/json");
+            Console.WriteLine(content);
+            using(var response = await httpClient.PutAsync("http://edgex-core-command:48082/api/v1/device/e606acef-b6a9-471a-b2a8-e01e5eb34987/command/0032615f-20f6-4aef-88dd-2256e46937fd", content))
+            {
+                string apiResponse = await response.Content.ReadAsStringAsync();
+                Console.WriteLine(apiResponse);
+            }
+        }
+    }
+
+    
+
+    Console.WriteLine();
+    return;
+};
+
+client.ConnectedAsync += async (e) =>
+{
+    Console.WriteLine("### CONNECTED WITH SERVER, SUBSCRIBING ###");
+
+    await client.SubscribeAsync(mqttSubscribeOptions);
+};
+
+client.DisconnectedAsync += async (e) =>
+{
+    Console.WriteLine("### DISCONNECTED FROM SERVER ###");
+    await Task.Delay(TimeSpan.FromSeconds(5));
+
+    try
+    {
+        await client.ConnectAsync(mqttClientOptions);
+    }
+    catch
+    {
+        Console.WriteLine("### RECONNECTING FAILED ###");
+    }
+};
+
+try
+{
+    await client.ConnectAsync(mqttClientOptions);
+}
+catch
+{
+    Console.WriteLine("### CONNECTING FAILED ###");
+}
+
+Console.WriteLine("### WAITING FOR APPLICATION MESSAGES ###");
+//app.UseHttpsRedirection();
 
 app.UseAuthorization();
 
