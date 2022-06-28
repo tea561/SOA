@@ -27,7 +27,7 @@ namespace monitoring.Controllers
         [HttpPost]
         public ActionResult Temperature(double tempLimit)
         {
-            _monitoringService.dict["temp"] = tempLimit;
+            _monitoringService.limits["temp"] = tempLimit;
             return Ok();
         }
 
@@ -35,7 +35,7 @@ namespace monitoring.Controllers
         [HttpPost]
         public ActionResult Humidity(double humidityLimit)
         {
-            _monitoringService.dict["humidity"] = humidityLimit;
+            _monitoringService.limits["humidity"] = humidityLimit;
             return Ok();
         }
 
@@ -43,7 +43,7 @@ namespace monitoring.Controllers
         [HttpPost]
         public ActionResult Co(double coLimit)
         {
-            _monitoringService.dict["co"] = coLimit;
+            _monitoringService.limits["co"] = coLimit;
             return Ok();
         }
 
@@ -51,7 +51,7 @@ namespace monitoring.Controllers
         [HttpPost]
         public ActionResult Smoke(double smokeLimit)
         {
-            _monitoringService.dict["smoke"] = smokeLimit;
+            _monitoringService.limits["smoke"] = smokeLimit;
             return Ok();
         }
 
@@ -59,7 +59,7 @@ namespace monitoring.Controllers
         [HttpPost]
         public ActionResult Lpg(double lpgLimit)
         {
-            _monitoringService.dict["lpg"] = lpgLimit;
+            _monitoringService.limits["lpg"] = lpgLimit;
             return Ok();
         }
     }

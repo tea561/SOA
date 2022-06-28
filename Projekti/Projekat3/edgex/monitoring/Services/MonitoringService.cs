@@ -6,100 +6,32 @@ using MQTTnet.Client;
 namespace monitoring.Services {
     public class MonitoringService {
 
-        public IDictionary<string, double> dict;
+        public IDictionary<string, double> limits;
+        public IDictionary<string, int> counts;
 
-        //public static async Task<MonitoringService> Create()
-        //{
-        //    var monitoringService = new MonitoringService();
-        //    await monitoringService.SubscribeOnTopic();
-        //    return monitoringService;
-        //}
+        public IDictionary<string, string> colors;
 
 
         public MonitoringService()
         {
-            dict = new Dictionary<string, double>();
-            dict.Add("temp", 0.0);
-            dict.Add("humidity", 0.0);
-            dict.Add("smoke", 0.0);
-            dict.Add("co", 0.0);
-            dict.Add("lpg", 0.0);
-            //SubscribeOnTopic();
+            limits = new Dictionary<string, double>();
+            counts = new Dictionary<string, int>();
+            colors = new Dictionary<string, string>();
+            initDictionaries();
+            
         }
 
-        public async void SubscribeOnTopic()
+        private void initDictionaries()
         {
-            var mqttFactory = new MqttFactory();
-
-            using (var mqttClient = mqttFactory.CreateMqttClient())
+            var colorNames = new List<String> {"orange", "blue", "purple", "red", "yellow"};
+            var paramNames = new List<String>{"temp", "humidity", "smoke", "co", "lpg"};
+            for(int i = 0; i < 5; i++)
             {
-                var mqttClientOptions = new MqttClientOptionsBuilder()
-                    .WithTcpServer("mqtt-edgex", 1883)
-                    .WithClientId("monitoring")
-                    .Build();
-
-                
-                mqttClient.ApplicationMessageReceivedAsync += e =>
-                {
-                    //Console.WriteLine("Received application message. " + e.ToString());
-                    Console.WriteLine(Encoding.UTF8.GetString(e.ApplicationMessage.Payload));
-                    Console.WriteLine(e.ApplicationMessage.Topic);
-                    //var result = DumpToConsole(e);
-                    return Task.CompletedTask;
-                };
-
-                mqttClient.ConnectedAsync += conn =>
-                {
-                    Console.WriteLine("The MQTT client is connected.");
-                    return Task.CompletedTask;
-                };
-                mqttClient.DisconnectedAsync += disc =>
-                {
-                    Console.WriteLine("The MQTT client is disconnected.");
-                    return Task.CompletedTask;
-                };
-
-                var response = await mqttClient.ConnectAsync(mqttClientOptions, CancellationToken.None);
-                Console.WriteLine(response.ResultCode);
-
-                // var applicationMessage = new MqttApplicationMessageBuilder()
-                //     .WithTopic("environment-data")
-                //     .WithPayload(payload)
-                //     .Build();
-                // await mqttClient.PublishAsync(applicationMessage, CancellationToken.None);
-                // Console.WriteLine("MQTT application message is published.");
-
-                
-                var mqttSubscribeOptions = mqttFactory.CreateSubscribeOptionsBuilder()
-                    .WithTopicFilter(f => {f.WithTopic("environment-data"); })
-                    .Build();
-
-                
-                await mqttClient.SubscribeAsync(mqttSubscribeOptions, CancellationToken.None);
-                Console.WriteLine("MQTT client subscribed to topic.");
-                
-                var disconnectOptions = new MqttClientDisconnectOptionsBuilder()
-                    .WithReason(MqttClientDisconnectReason.NormalDisconnection)
-                    .Build();
-                //await mqttClient.DisconnectAsync(disconnectOptions);
-
+                limits.Add(paramNames[i], 0.0);
+                counts.Add(paramNames[i], 0);
+                colors.Add(paramNames[i], colorNames[i]);
             }
         }
-
-        // private TObject DumpToConsole<TObject>(this TObject @object)
-        // {
-        //     var output = "NULL";
-        //     if (@object != null)
-        //     {
-        //         output = JsonSerializer.Serialize(@object, new JsonSerializerOptions
-        //         {
-        //             WriteIndented = true
-        //         });
-        //     }
-
-        //     Console.WriteLine($"[{@object?.GetType().Name}]:\r\n{output}");
-        //     return @object;
-        // }
 
     }
 }
