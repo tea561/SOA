@@ -73,7 +73,7 @@ client.ApplicationMessageReceivedAsync += async (e) =>
             colorName = monitoringService.colors[paramNameStr];           
         }
     }
-    else {
+    else if (monitoringService.counts[paramNameStr] > 0) {
         monitoringService.counts[paramNameStr] = 0;
         colorName = "green";
     }
@@ -84,7 +84,8 @@ client.ApplicationMessageReceivedAsync += async (e) =>
             {
                 var jsonObj = new
                 {
-                    color = colorName
+                    color = colorName,
+                    param = paramNameStr
                 };
                 var c = JsonConvert.SerializeObject(jsonObj);
                 Console.WriteLine(c);

@@ -5,8 +5,12 @@ from flask import Flask, render_template, redirect, request, url_for, make_respo
 from flask_restful import Resource, Api, reqparse
 
 app = Flask(__name__)
-color = "green"
-
+colors = dict()
+colors["temp"] = "green"
+colors["humidity"] = "green"
+colors["co"] = "green"
+colors["smoke"] = "green"
+colors["lpg"] = "green"
 
 @app.route('/')
 def index():
@@ -16,7 +20,8 @@ def index():
 
 @app.route('/_ajaxAutoRefresh', methods= ['GET'])
 def stuff():
-    return jsonify(color=color)
+    global colors
+    return jsonify(colorTemp=colors['temp'], colorHumidity=colors['humidity'], colorCO=colors['co'], colorSmoke=colors['smoke'], colorLpg=colors['lpg'])
 
 
 @app.route('/api/v1/device/register',methods=['POST'])
@@ -38,14 +43,17 @@ def register():
 
 @app.route('/api/v1/device/<id>/changeColor',methods=['PUT'])
 def changeColor(id):
-    global color
+    global colors
     request.get_json(force=True)
 
     parser = reqparse.RequestParser()
     parser.add_argument('color', required=True)
+    parser.add_argument('param', required=True)
     args = parser.parse_args()
 
     color = (args['color'])
+    param = (args['param'])
+    colors[param] = color
 
     print("requesting device: ", id)
 

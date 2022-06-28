@@ -10,8 +10,22 @@
     <center>
 
     <table>
-        <tr><td id="colorChanger" bgcolor="blue" height=300px width=300px></td></tr>
+        <tr>
+            <th>Temperature</th>
+            <th>Humidity</th>
+            <th>CO</th>
+            <th>Smoke</th>
+            <th>LPG</th>
+        </tr>
+        <tr>
+            <td id="colorChangerTemp" bgcolor="green" height=100px width=100px></td>
+            <td id="colorChangerHumidity" bgcolor="green" height=100px width=100px></td>
+            <td id="colorChangerCO" bgcolor="green" height=100px width=100px></td>
+            <td id="colorChangerSmoke" bgcolor="green" height=100px width=100px></td>
+            <td id="colorChangerLpg" bgcolor="green" height=100px width=100px></td>
+        </tr>
     </table>
+
 
     </center>
 
@@ -27,7 +41,11 @@
             $.getJSON(
                 $SCRIPT_ROOT+"/_ajaxAutoRefresh", 
                 function(data) {
-                document.getElementById("colorChanger").style.backgroundColor=data.color;
+                document.getElementById("colorChangerTemp").style.backgroundColor=data.colorTemp;
+                document.getElementById("colorChangerHumidity").style.backgroundColor=data.colorHumidity;
+                document.getElementById("colorChangerCO").style.backgroundColor=data.colorCO;
+                document.getElementById("colorChangerSmoke").style.backgroundColor=data.colorSmoke;
+                document.getElementById("colorChangerLpg").style.backgroundColor=data.colorLpg;
                 }
             );
             setTimeout(arguments.callee, 1000);
