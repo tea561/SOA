@@ -14,12 +14,12 @@ warnings.filterwarnings("ignore")
 parser = argparse.ArgumentParser(
     description="Python script for creating a new device from scratch in EdgeX Foundry")
 
-# parser.add_argument('-ip', help='EdgeX Foundry IP address', required=True)
+parser.add_argument('-ip', help='EdgeX Foundry IP address', required=True)
 
-# args = vars(parser.parse_args())
+args = vars(parser.parse_args())
 
-# edgex_ip = args["ip"]
-edgex_ip = "127.0.0.1"
+edgex_ip = args["ip"]
+
 
 
 def createValueDescriptors():

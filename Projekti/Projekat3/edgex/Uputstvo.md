@@ -38,14 +38,14 @@ docker-compose up --build
 U folderu ./Projekat3/edgex/device-creation:
 ``` console
 pip install -r requirements.txt
-py createSensorCluster.py
+py createSensorCluster.py -ip localhost
 ```
 
 ## Kreiranje device-a:
 U folderu ./Projekat3/edgex/device-creation:
 ``` console
 pip install -r requirements.txt
-py createRESTDevice.py
+py createRESTDevice.py -ip localhost -devip test-app
 ```
 Provera iz Postman-a: http://localhost:48082/api/v1/device
 
