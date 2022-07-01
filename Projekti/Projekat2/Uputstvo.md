@@ -112,4 +112,4 @@ node smartwatch.js
  - Analytics mikroservis: 
 ![Analytics](./resources/analytics.png)
  - Notification mikroservis: 
-![Notification](./resources/notification.png
+![Notification](./resources/notification.png)
