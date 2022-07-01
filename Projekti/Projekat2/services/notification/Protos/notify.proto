@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+option csharp_namespace = "notification";
+
+package notification;
+
+service Notification {
+  // Sends a greeting
+  rpc NotifyEvent (NotifyRequest) returns (NotifyReply);
+}
+
+message NotifyRequest {
+  string eventName = 1;
+  Parameters params = 2;
+}
+
+message Parameters {
+  int32 sys = 1;
+  int32 dias = 2;
+  int32 pulse = 3;
+  int32 userID = 4;
+  string timestamp = 5;
+}
+
+message NotifyReply {
+  string message = 1;
+}

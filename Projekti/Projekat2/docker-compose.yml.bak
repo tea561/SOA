@@ -1,0 +1,160 @@
+version: "3.3"
+services:
+  influx:
+    image: influxdb:1.8
+    networks:
+      healthapp:
+        aliases:
+          - influx
+    environment:
+      - INFLUXDB_ADMIN_ENABLED=true
+    volumes:
+      - influxdata:/var/lib/influx.db
+    ports:
+      - "8086:8086"
+  data:
+    build:
+      context: .
+    env_file: docker-compose.env
+    environment:
+      NODEID: "node-data"
+      SERVICES: data
+      ADMIN_USER: admin
+      ADMIN_PASSWORD: admin
+      INFLUXDB_DATABASE: vitals
+      INFLUXDB_HOST: influx
+    networks:
+      healthapp:
+        aliases:
+          - data
+    ports:
+      - "3333:3333"
+    depends_on:
+      - influx
+  gateway:
+    build:
+      context: ./services/gateway
+    image: gateway
+    networks:
+      healthapp:
+        aliases:
+          - gateway
+    ports:
+      - "5000:80"
+  grafana:
+    ports:
+      - 4200:3000
+    image: grafana/grafana:3.1.1
+    networks:
+      healthapp:
+        aliases:
+          - grafana
+    depends_on:
+      - influx
+    links:
+      - influx
+    volumes:
+      - influxdata:/var/lib/influx.db
+  mqtt:
+    container_name: mqtt
+    hostname: mqtt
+    image: eclipse-mosquitto:2.0.14
+    restart: always
+    networks:
+      healthapp:
+        aliases:
+          - mqtt
+    volumes:
+      - ./mosquitto/config:/mosquitto/config
+      - ./mosquitto/data:/mosquitto/data
+      - ./mosquitto/log:/mosquitto/log
+    expose:
+      - 1883
+      - 9001
+    ports:
+      - 1883:1883
+      - 9001:9001
+  analytics:
+    build:
+      context: ./services/analytics
+    image: analytics
+    restart: unless-stopped
+    networks:
+      healthapp:
+        aliases:
+          - analytics
+    ports:
+      - "5005:5005"
+    environment:
+      MONGODB_DATABASE: analyticsdb
+      MONGODB_USERNAME: userdb
+      MONGODB_PASSWORD: passworddb
+      MONGODB_HOSTNAME: mongodb
+    volumes:
+      - appdata:/var/www
+    depends_on:
+      - mongodb
+  manager:
+    image: emqx/ekuiper-manager:1.4
+    container_name: manager
+    hostname: manager
+    networks:
+      healthapp:
+        aliases:
+          - manager    
+    ports:
+      - 9082:9082
+  ekuiper:
+    container_name: ekuiper
+    hostname: ekuiper
+    image: lfedge/ekuiper:1.4-slim
+    networks:
+      healthapp:
+        aliases:
+          - ekuiper
+    ports:
+      - 9081:9081
+    environment:
+      MQTT_SOURCE__DEFAULT__SERVERS: "[tcp://mqtt:1883]"
+
+  notification:
+    container_name: notification
+    build:
+      context: ./services/notification
+    image: notification
+    networks:
+      healthapp:
+        aliases:
+          - notification
+    ports:
+      - "5007:80"
+  
+  mongodb:
+    image: mongo:latest
+    container_name: mongodb
+    hostname: mongodb
+    restart: unless-stopped
+    command: mongod --auth
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: userdb
+      MONGO_INITDB_ROOT_PASSWORD: passworddb
+      MONGO_INITDB_DATABASE: analyticsdb
+      MONGODB_DATA_DIR: /data/db
+      MONDODB_LOG_DIR: /dev/null
+    ports:
+      - "27017:27017"
+    networks:
+      healthapp:
+        aliases:
+          - mongodb
+    volumes:
+      - mongodbdata:/data/db
+  
+
+volumes:
+  influxdata:
+  mongodbdata:
+  appdata:
+
+networks:
+  healthapp:
