@@ -71,8 +71,8 @@ Otvoriti http://localhost:5000
 Monitoring mikroservis proverava parametre koje dobija preko brokera i ukoliko su 5 puta zaredom iznad granice menja boju odgovarajuceg kvadrata.
 Default granice su za sve parametre 0. Granice se šalju monitoring mikroservisu preko REST API-a.
 Promena granica iz Postman-a:
-http://localhost:5007/monitoring/temp/15
-http://localhost:5007/monitoring/humidity/50
-http://localhost:5007/monitoring/smoke/0.2
-http://localhost:5007/monitoring/co/0.05
-http://localhost:5007/monitoring/lpg/0.02
+- http://localhost:5007/monitoring/temp/15
+- http://localhost:5007/monitoring/humidity/50
+- http://localhost:5007/monitoring/smoke/0.2
+- http://localhost:5007/monitoring/co/0.05
+- http://localhost:5007/monitoring/lpg/0.02
