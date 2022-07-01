@@ -76,3 +76,5 @@ Promena granica iz Postman-a:
 - http://localhost:5007/monitoring/smoke/0.2
 - http://localhost:5007/monitoring/co/0.05
 - http://localhost:5007/monitoring/lpg/0.02
+
+![Prikaz](./resources/ss3.png)

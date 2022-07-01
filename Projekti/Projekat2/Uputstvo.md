@@ -98,7 +98,7 @@ Stream Format: json
 - MQTT topic: analysis/low-pressure
 ## Pokretanje pomoćne aplikacije
 
-U folderu ./Projekat1/sensor-app:
+U folderu ./Projekat2/sensor-app:
 
 ```
 
